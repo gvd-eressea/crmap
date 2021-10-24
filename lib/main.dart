@@ -82,11 +82,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           bottom: TabBar(
             controller: tabController,
             tabs: [
-              Tab(text: 'Grid'),
+              Tab(text: 'CR öffnen'),
+              // Tab(text: 'Grid'),
               Tab(text: 'Karte'),
               Tab(text: 'Region'),
-              // Tab(text: 'Beispiel'),
-              Tab(text: 'CR öffnen'),
+              Tab(text: 'Beispiel'),
             ],
           ),
           title: Text(widget.title),
@@ -109,79 +109,83 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           controller: tabController,
           physics: NeverScrollableScrollPhysics(),
           children: [
-            Stack(
-              children: [
-                Positioned.fill(child: _buildGrid(context, type)),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Visibility(
-                    visible: showControls,
-                    child: Theme(
-                      data: ThemeData(colorScheme: ColorScheme.dark()),
-                      child: Card(
-                        margin: EdgeInsets.all(8.0),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 2.0, horizontal: 16.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              DropdownButton<HexagonType>(
-                                onChanged: (value) => this.setState(() {
-                                  type = value;
-                                }),
-                                value: type,
-                                items: [
-                                  DropdownMenuItem<HexagonType>(
-                                    value: HexagonType.FLAT,
-                                    child: Text('Flat'),
-                                  ),
-                                  DropdownMenuItem<HexagonType>(
-                                    value: HexagonType.POINTY,
-                                    child: Text('Pointy'),
-                                  )
-                                ],
-                                selectedItemBuilder: (context) => [
-                                  Center(child: Text('Flat')),
-                                  Center(child: Text('Pointy')),
-                                ],
-                              ),
-                              DropdownButton<int>(
-                                onChanged: (value) => this.setState(() {
-                                  depth = value;
-                                }),
-                                value: depth,
-                                items: depths
-                                    .map((e) => DropdownMenuItem<int>(
-                                          value: e,
-                                          child: Text('Depth: $e'),
-                                        ))
-                                    .toList(),
-                                selectedItemBuilder: (context) {
-                                  return depths
-                                      .map((e) =>
-                                          Center(child: Text('Depth: $e')))
-                                      .toList();
-                                },
-                              ),
-                            ],
-                          ),
+            _openFile(),
+            // _buildStack(context),
+            _buildHorizontalGrid(context, size, tabController),
+            _buildRegion(),
+            _buildMore(size),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Stack _buildStack(BuildContext context) {
+    return Stack(
+            children: [
+              Positioned.fill(child: _buildGrid(context, type)),
+              Align(
+                alignment: Alignment.topRight,
+                child: Visibility(
+                  visible: showControls,
+                  child: Theme(
+                    data: ThemeData(colorScheme: ColorScheme.dark()),
+                    child: Card(
+                      margin: EdgeInsets.all(8.0),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 2.0, horizontal: 16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DropdownButton<HexagonType>(
+                              onChanged: (value) => this.setState(() {
+                                type = value;
+                              }),
+                              value: type,
+                              items: [
+                                DropdownMenuItem<HexagonType>(
+                                  value: HexagonType.FLAT,
+                                  child: Text('Flat'),
+                                ),
+                                DropdownMenuItem<HexagonType>(
+                                  value: HexagonType.POINTY,
+                                  child: Text('Pointy'),
+                                )
+                              ],
+                              selectedItemBuilder: (context) => [
+                                Center(child: Text('Flat')),
+                                Center(child: Text('Pointy')),
+                              ],
+                            ),
+                            DropdownButton<int>(
+                              onChanged: (value) => this.setState(() {
+                                depth = value;
+                              }),
+                              value: depth,
+                              items: depths
+                                  .map((e) => DropdownMenuItem<int>(
+                                        value: e,
+                                        child: Text('Depth: $e'),
+                                      ))
+                                  .toList(),
+                              selectedItemBuilder: (context) {
+                                return depths
+                                    .map((e) =>
+                                        Center(child: Text('Depth: $e')))
+                                    .toList();
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
-            _buildHorizontalGrid(context, size, tabController),
-            _buildRegion(),
-            // _buildMore(size),
-            _openFile(),
-          ],
-        ),
-      ),
-    );
+              ),
+            ],
+          );
   }
 
   Widget _buildGrid(BuildContext context, HexagonType type) {
@@ -473,7 +477,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   Widget _buildMore(Size size) {
     var padding = 1.0;
-    var w = (size.width - 4 * padding) / 2;
+    var w = (size.width - 4 * padding) / 4;
     var h = 150.0;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -510,46 +514,99 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     name: 'images/ozean.gif',
                   ),
                 ),
+                Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/hochland.gif',
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/sumpf.gif',
+                  ),
+                ),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: HexagonWidget.flat(
-                    height: h,
-                    color: Colors.orangeAccent,
-                    child: Text('flat\nheight: ${h.toStringAsFixed(2)}'),
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/feuerwand.gif',
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: HexagonWidget.pointy(
-                    height: h,
-                    color: Colors.red,
-                    child: Text('pointy\nheight: ${h.toStringAsFixed(2)}'),
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/vulkan.gif',
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/wald.gif',
                   ),
                 ),
               ],
             ),
-            Padding(
-              padding: EdgeInsets.all(padding),
-              child: HexagonWidget.flat(
-                width: w,
-                color: Colors.limeAccent,
-                elevation: 0,
-                child:
-                    Text('flat\nwidth: ${w.toStringAsFixed(2)}\nelevation: 0'),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(padding),
-              child: HexagonWidget.pointy(
-                width: w,
-                color: Colors.lightBlue,
-                child: Text('pointy\nwidth: ${w.toStringAsFixed(2)}'),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/wueste.gif',
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/unbekannt.gif',
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/ozean.gif',
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/aktiver vulkan.gif',
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: RegionWidget(
+                    key: UniqueKey(),
+                    width: w,
+                    name: 'images/sumpf.gif',
+                  ),
+                ),
+              ],
             ),
           ],
         ),
