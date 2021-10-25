@@ -2,7 +2,7 @@
     package="com.gnurps.crmap_app">
    <application
         android:label="crmap_app"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/crmap">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
