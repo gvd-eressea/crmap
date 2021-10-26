@@ -259,7 +259,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ? ((rl.maxX - rl.minX) ~/ 2) - (columns ~/ 2) + _horizontalDrag
         : rl.minX + 2 + _horizontalDrag;
     int yOffset =
-        rl.maxY < 0 ? -1 * rl.maxY + maxRows ~/ 2 : 0; //-14 - rl.minY;
+        rl.maxY ~/ 2 != 0 ? -1 * rl.maxY + maxRows ~/ 2 : 0; //-14 - rl.minY;
 
     print(
         'min (${rl.minX}, ${rl.minY}), max (${rl.maxX}, ${rl.maxY}), col $columns, rows $rows, xOffset $xOffset, yOffset $yOffset / Size ${size.width} / horizontalDrag $_horizontalDrag');
