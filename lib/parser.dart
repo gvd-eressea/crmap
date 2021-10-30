@@ -47,6 +47,7 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
   int recruits = 0;
   int wage = 0;
   int count = 0;
+  var regionActive = false;
 
   if (inputStream == null) {
     return regionList;
@@ -59,6 +60,7 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
 //      .listen((String line) {
     // Process results.
     if (line.startsWith("REGION")) {
+      regionActive = true;
       if (regionList.length < count) {
         region = Region(id, x, y, name, terrain, description, trees, saplings,
             peasants, horses, silver, entertainment, recruits, wage);
@@ -73,44 +75,54 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
       x = int.parse(split.elementAt(1));
       y = int.parse(split.elementAt(2));
       count++;
+    } else if (line.startsWith("EINHEIT")) {
+      regionActive = false;
+    } else if (line.startsWith("SCHIFF")) {
+      regionActive = false;
+    } else if (line.startsWith("BURG")) {
+      regionActive = false;
+    } else if (line.startsWith("TRANSLATION")) {
+      regionActive = false;
     } else {
-      List<String> split = line.split(";");
-      if (split.length > 1) {
-        if (split.elementAt(1).replaceAll("\r", "") == "id") {
-          id = split.elementAt(0);
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Terrain") {
-          terrain = split.elementAt(0).replaceAll("\"", "");
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Name") {
-          name = split.elementAt(0).replaceAll("\"", "");
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Beschr") {
-          description = split.elementAt(0).replaceAll("\"", "");
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Baeume") {
-          trees = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Schoesslinge") {
-          saplings = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Bauern") {
-          peasants = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Pferde") {
-          horses = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Silber") {
-          silver = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Unterh") {
-          entertainment = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Rekruten") {
-          recruits = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1).replaceAll("\r", "") == "Lohn") {
-          wage = int.parse(split.elementAt(0).replaceAll("\"", ""));
+      if (regionActive) {
+        List<String> split = line.split(";");
+        if (split.length > 1) {
+          if (split.elementAt(1).replaceAll("\r", "") == "id") {
+            id = split.elementAt(0);
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Terrain") {
+            terrain = split.elementAt(0).replaceAll("\"", "");
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Name") {
+            name = split.elementAt(0).replaceAll("\"", "");
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Beschr") {
+            description = split.elementAt(0).replaceAll("\"", "");
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Baeume") {
+            trees = int.parse(split.elementAt(0).replaceAll("\"", ""));
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Schoesslinge") {
+            saplings = int.parse(split.elementAt(0).replaceAll("\"", ""));
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Bauern") {
+            peasants = int.parse(split.elementAt(0).replaceAll("\"", ""));
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Pferde") {
+            horses = int.parse(split.elementAt(0).replaceAll("\"", ""));
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Silber") {
+            silver = int.parse(split.elementAt(0).replaceAll("\"", ""));
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Unterh") {
+            entertainment = int.parse(split.elementAt(0).replaceAll("\"", ""));
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Rekruten") {
+            recruits = int.parse(split.elementAt(0).replaceAll("\"", ""));
+          }
+          if (split.elementAt(1).replaceAll("\r", "") == "Lohn") {
+            wage = int.parse(split.elementAt(0).replaceAll("\"", ""));
+          }
         }
       }
     }
