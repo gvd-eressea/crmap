@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:crmap_app/parser.dart';
 import 'package:crmap_app/region.dart';
 import 'package:file_picker/file_picker.dart';
@@ -122,70 +124,69 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   Stack _buildStack(BuildContext context) {
     return Stack(
-            children: [
-              Positioned.fill(child: _buildGrid(context, type)),
-              Align(
-                alignment: Alignment.topRight,
-                child: Visibility(
-                  visible: showControls,
-                  child: Theme(
-                    data: ThemeData(colorScheme: ColorScheme.dark()),
-                    child: Card(
-                      margin: EdgeInsets.all(8.0),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 2.0, horizontal: 16.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DropdownButton<HexagonType>(
-                              onChanged: (value) => this.setState(() {
-                                type = value;
-                              }),
-                              value: type,
-                              items: [
-                                DropdownMenuItem<HexagonType>(
-                                  value: HexagonType.FLAT,
-                                  child: Text('Flat'),
-                                ),
-                                DropdownMenuItem<HexagonType>(
-                                  value: HexagonType.POINTY,
-                                  child: Text('Pointy'),
-                                )
-                              ],
-                              selectedItemBuilder: (context) => [
-                                Center(child: Text('Flat')),
-                                Center(child: Text('Pointy')),
-                              ],
-                            ),
-                            DropdownButton<int>(
-                              onChanged: (value) => this.setState(() {
-                                depth = value;
-                              }),
-                              value: depth,
-                              items: depths
-                                  .map((e) => DropdownMenuItem<int>(
-                                        value: e,
-                                        child: Text('Depth: $e'),
-                                      ))
-                                  .toList(),
-                              selectedItemBuilder: (context) {
-                                return depths
-                                    .map((e) =>
-                                        Center(child: Text('Depth: $e')))
-                                    .toList();
-                              },
-                            ),
-                          ],
-                        ),
+      children: [
+        Positioned.fill(child: _buildGrid(context, type)),
+        Align(
+          alignment: Alignment.topRight,
+          child: Visibility(
+            visible: showControls,
+            child: Theme(
+              data: ThemeData(colorScheme: ColorScheme.dark()),
+              child: Card(
+                margin: EdgeInsets.all(8.0),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 2.0, horizontal: 16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButton<HexagonType>(
+                        onChanged: (value) => this.setState(() {
+                          type = value;
+                        }),
+                        value: type,
+                        items: [
+                          DropdownMenuItem<HexagonType>(
+                            value: HexagonType.FLAT,
+                            child: Text('Flat'),
+                          ),
+                          DropdownMenuItem<HexagonType>(
+                            value: HexagonType.POINTY,
+                            child: Text('Pointy'),
+                          )
+                        ],
+                        selectedItemBuilder: (context) => [
+                          Center(child: Text('Flat')),
+                          Center(child: Text('Pointy')),
+                        ],
                       ),
-                    ),
+                      DropdownButton<int>(
+                        onChanged: (value) => this.setState(() {
+                          depth = value;
+                        }),
+                        value: depth,
+                        items: depths
+                            .map((e) => DropdownMenuItem<int>(
+                                  value: e,
+                                  child: Text('Depth: $e'),
+                                ))
+                            .toList(),
+                        selectedItemBuilder: (context) {
+                          return depths
+                              .map((e) => Center(child: Text('Depth: $e')))
+                              .toList();
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          );
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildGrid(BuildContext context, HexagonType type) {
@@ -249,20 +250,21 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   SingleChildScrollView showMap(
       RegionList rl, Size size, TabController tabController) {
+    var indexZero =
+        rl.regions.indexWhere((region) => region.x == 0 && region.y == 0);
+    int centerX = indexZero > 0 ? 0 : (rl.maxX - rl.minX) ~/ 2;
+    int centerY = indexZero > 0 ? 0 : (rl.maxY - rl.minY) ~/ 2;
     int maxColumns = rl.maxX - rl.minX + 1;
     int maxRows = rl.maxY - rl.minY + 1;
     int columns = maxColumns > (size.width.toInt() ~/ 80)
         ? (size.width.toInt() ~/ 80)
         : maxColumns;
-    int rows = maxRows; // > 50 ? 50 : maxRows;
-    int xOffset = rl.minX > 0
-        ? ((rl.maxX - rl.minX) ~/ 2) - (columns ~/ 2) + _horizontalDrag
-        : rl.minX + 2 + _horizontalDrag;
-    int yOffset =
-        rl.maxY < 0 ? -1 * rl.maxY + maxRows ~/ 2 : 0; //-14 - rl.minY;
+    int rows = maxRows;
+    int xOffset = centerX - (columns ~/ 2) - rl.maxY ~/ 2 + _horizontalDrag;
+    int yOffset = 0;
 
     print(
-        'min (${rl.minX}, ${rl.minY}), max (${rl.maxX}, ${rl.maxY}), col $columns, rows $rows, xOffset $xOffset, yOffset $yOffset / Size ${size.width} / horizontalDrag $_horizontalDrag');
+        'min (${rl.minX}, ${rl.minY}), max (${rl.maxX}, ${rl.maxY}), center ($centerX, $centerY), col $columns, rows $rows, xOffset $xOffset, yOffset $yOffset / Size ${size.width} / horizontalDrag $_horizontalDrag');
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
@@ -274,12 +276,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             columns: columns,
             rows: rows,
             buildTile: (col, row) {
-              int y = (rl.maxY - rl.minY) ~/ 2 - row - yOffset;
+              int y = rl.maxY - row - yOffset;// (rl.maxY - rl.minY) ~/ 2 - row - yOffset + 1;
               int x = col +
-                  xOffset -
-                  (rl.maxX - rl.minX) ~/ 2 +
+                  xOffset //-
+                  //(rl.maxX - rl.minX) ~/ 2
+                  +
                   (row ~/ 2) -
-                  (y.isOdd ? 1 : 0);
+                  (rl.maxY.isOdd ? (y.isOdd ? 1 : 0) : (y.isOdd ? 0 : 1));
               Region found = rl.regions.firstWhere(
                   (region) => region.x == x && region.y == y,
                   orElse: () =>
@@ -355,7 +358,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                         '${found.name == "" ? found.terrain : found.name} / ${x},${y}'),
                     onTap: () {
                       print(
-                          '${found.name == "" ? found.terrain : found.name} / ${x},${y}');
+                          '${found.name == "" ? found.terrain : found.name} / ${x},${y} / ($col,$row)');
                       tabController.animateTo(tabController.index + 1);
                       _markedRegion = found;
                     },
@@ -626,17 +629,22 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ElevatedButton(
             style: style,
             onPressed: () async {
+              var myRegionsList;
               FilePickerResult result =
                   await FilePicker.platform.pickFiles(type: FileType.any);
-              setState(() {
-                if (result != null) {
-                  print(result.files.first.name);
-                  var fileStream = result.files.first.bytes;
-                  // print(result.files.first.bytes);
-                  var myRegionsList = readFileByLinesForStream(fileStream);
-                  print(myRegionsList);
-                  _regionsListFromFile = myRegionsList;
+              if (result != null) {
+                File file = File(result.files.single.path);
+                var fileStream = file.readAsBytesSync();
+                if (fileStream != null) {
+                  print("File stream length: "+ fileStream.lengthInBytes.toString());
+                  myRegionsList = readFileByLinesForStream(fileStream);
+                } else {
+                  print("file stream empty");
                 }
+                print(myRegionsList);
+              }
+              setState(() {
+                _regionsListFromFile = myRegionsList;
               });
             },
             child: const Text('CR öffnen'),
@@ -645,25 +653,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       ),
     );
   }
-}
-
-String coordinates(int x, int y) {
-  // // int x = col - 111 ~/ 2;
-  // // col = x + 111  ~/ 2;
-  // var out = 'x-transformation\n';
-  // for (var i = x; i < x + 5; i++) {
-  //   var col = i + 111 ~/ 2;
-  //   out = out + '$i -> $col\n';
-  // }
-  // // int y = 102 ~/ 2 - row;
-  // // row = 102 ~/ 2 - y;
-  // out = out + 'y-transformation\n';
-  // for (var i = y; i < y + 5; i++) {
-  //   var row = 102 ~/ 2 - i;
-  //   out = out + '$i -> $row\n';
-  // }
-  // return out;
-  return "";
 }
 
 class RegionWidget extends StatelessWidget {
