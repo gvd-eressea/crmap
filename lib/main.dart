@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:crmap_app/parser.dart';
 import 'package:crmap_app/region.dart';
 import 'package:file_picker/file_picker.dart';
@@ -627,17 +629,22 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ElevatedButton(
             style: style,
             onPressed: () async {
+              var myRegionsList;
               FilePickerResult result =
                   await FilePicker.platform.pickFiles(type: FileType.any);
-              setState(() {
-                if (result != null) {
-                  print(result.files.first.name);
-                  var fileStream = result.files.first.bytes;
-                  // print(result.files.first.bytes);
-                  var myRegionsList = readFileByLinesForStream(fileStream);
-                  print(myRegionsList);
-                  _regionsListFromFile = myRegionsList;
+              if (result != null) {
+                File file = File(result.files.single.path);
+                var fileStream = file.readAsBytesSync();
+                if (fileStream != null) {
+                  print("File stream length: "+ fileStream.lengthInBytes.toString());
+                  myRegionsList = readFileByLinesForStream(fileStream);
+                } else {
+                  print("file stream empty");
                 }
+                print(myRegionsList);
+              }
+              setState(() {
+                _regionsListFromFile = myRegionsList;
               });
             },
             child: const Text('CR öffnen'),
@@ -646,25 +653,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       ),
     );
   }
-}
-
-String coordinates(int x, int y) {
-  // // int x = col - 111 ~/ 2;
-  // // col = x + 111  ~/ 2;
-  // var out = 'x-transformation\n';
-  // for (var i = x; i < x + 5; i++) {
-  //   var col = i + 111 ~/ 2;
-  //   out = out + '$i -> $col\n';
-  // }
-  // // int y = 102 ~/ 2 - row;
-  // // row = 102 ~/ 2 - y;
-  // out = out + 'y-transformation\n';
-  // for (var i = y; i < y + 5; i++) {
-  //   var row = 102 ~/ 2 - i;
-  //   out = out + '$i -> $row\n';
-  // }
-  // return out;
-  return "";
 }
 
 class RegionWidget extends StatelessWidget {
