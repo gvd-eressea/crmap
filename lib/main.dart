@@ -47,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   List<Region> _regionsListFromFile;
   Region _markedRegion;
   int _horizontalDrag = 0;
+  int _verticalDrag = 0;
   int _lastDragTime = 0;
 
   @override
@@ -252,19 +253,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       RegionList rl, Size size, TabController tabController) {
     var indexZero =
         rl.regions.indexWhere((region) => region.x == 0 && region.y == 0);
-    int centerX = indexZero > 0 ? 0 : (rl.maxX - rl.minX) ~/ 2;
-    int centerY = indexZero > 0 ? 0 : (rl.maxY - rl.minY) ~/ 2;
+    int centerX = indexZero > 0 ? 0 : rl.maxX - (rl.maxX - rl.minX) ~/ 2;
+    int centerY = indexZero > 0 ? 0 : rl.maxY - (rl.maxY - rl.minY) ~/ 2;
     int maxColumns = rl.maxX - rl.minX + 1;
     int maxRows = rl.maxY - rl.minY + 1;
     int columns = maxColumns > (size.width.toInt() ~/ 80)
         ? (size.width.toInt() ~/ 80)
         : maxColumns;
-    int rows = maxRows;
-    int xOffset = centerX - (columns ~/ 2) - rl.maxY ~/ 2 + _horizontalDrag;
-    int yOffset = 0;
+    int rows = maxRows > (size.height.toInt() ~/ 80) * 2 ? (size.height.toInt() ~/ 80) * 2 : maxRows;
+    int yOffset = rl.maxY - (centerY + rows ~/2) + _verticalDrag;
+    int xOffset = centerX - (columns ~/ 2) - (rl.maxY - yOffset - centerY) ~/ 2 + _horizontalDrag;
 
     print(
-        'min (${rl.minX}, ${rl.minY}), max (${rl.maxX}, ${rl.maxY}), center ($centerX, $centerY), col $columns, rows $rows, xOffset $xOffset, yOffset $yOffset / Size ${size.width} / horizontalDrag $_horizontalDrag');
+        'min (${rl.minX}, ${rl.minY}), max (${rl.maxX}, ${rl.maxY}), center ($centerX, $centerY), col $columns, rows $rows, xOffset $xOffset, yOffset $yOffset / Size ${size.width} / horizontalDrag $_horizontalDrag / verticalDrag $_verticalDrag');
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
@@ -276,13 +277,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             columns: columns,
             rows: rows,
             buildTile: (col, row) {
-              int y = rl.maxY - row - yOffset;// (rl.maxY - rl.minY) ~/ 2 - row - yOffset + 1;
+              int y = rl.maxY - row - yOffset;
               int x = col +
-                  xOffset //-
-                  //(rl.maxX - rl.minX) ~/ 2
-                  +
+                  xOffset +
                   (row ~/ 2) -
-                  (rl.maxY.isOdd ? (y.isOdd ? 1 : 0) : (y.isOdd ? 0 : 1));
+                  ((rl.maxY+yOffset).isOdd ? (y.isOdd ? 1 : 0) : (y.isOdd ? 0 : 1));
               Region found = rl.regions.firstWhere(
                   (region) => region.x == x && region.y == y,
                   orElse: () =>
@@ -378,7 +377,24 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                           }
                         });
                       }
-                    }),
+                    },
+                  onVerticalDragUpdate:
+                      (DragUpdateDetails dragUpdateDetails) {
+                    var currTime = DateTime.now().millisecondsSinceEpoch;
+                    var diffTime = currTime - _lastDragTime;
+                    if (diffTime > 100) {
+                      _lastDragTime = currTime;
+                      print(
+                          'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
+                      setState(() {
+                        if (dragUpdateDetails.primaryDelta != 0) {
+                          dragUpdateDetails.primaryDelta > 0
+                              ? _verticalDrag--
+                              : _verticalDrag++;
+                        }
+                      });
+                    }
+                  }),
               );
             },
           )
@@ -633,10 +649,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               FilePickerResult result =
                   await FilePicker.platform.pickFiles(type: FileType.any);
               if (result != null) {
-                File file = File(result.files.single.path);
-                var fileStream = file.readAsBytesSync();
+                var fileStream = result.files.first.bytes;
+                if (fileStream == null) {
+                  File file = File(result.files.single.path);
+                  fileStream = file.readAsBytesSync();
+                }
                 if (fileStream != null) {
-                  print("File stream length: "+ fileStream.lengthInBytes.toString());
+                  print("File stream length: " +
+                      fileStream.lengthInBytes.toString());
                   myRegionsList = readFileByLinesForStream(fileStream);
                 } else {
                   print("file stream empty");
