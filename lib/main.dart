@@ -39,9 +39,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   List<int> depths = [0, 1, 2, 3, 4];
   HexagonType type = HexagonType.FLAT;
   bool hasControls = true;
-  bool showControls = true;
+  double hexSize = 80;
 
   TabController tabController;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String searchRegion = "";
 
   Future<List<Region>> _regionsList;
   List<Region> _regionsListFromFile;
@@ -62,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   void _onTabChange() {
-    if (tabController.index == 0) {
+    if (tabController.index == 1) {
       setState(() {
         hasControls = true;
       });
@@ -96,12 +98,63 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           actions: hasControls
               ? [
                   Row(children: [
-                    Text('Controls'),
-                    Switch(
-                      value: showControls,
+                    Form(
+                      key: _formKey,
+                      child: Row(
+                        children: <Widget>[
+                          ConstrainedBox(
+                            constraints:
+                                BoxConstraints.tight(const Size(200, 50)),
+                            child: TextFormField(
+                              decoration: const InputDecoration(
+                                hintText: 'Regionssuche',
+                              ),
+                              validator: (String value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Bitte Regionsnamen eingeben';
+                                }
+                                return null;
+                              },
+                              onSaved: (String value) {
+                                setState(() {
+                                  searchRegion = value;
+                                });
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState.validate()) {
+                                  _formKey.currentState.save();
+                                  print('searchRegion: $searchRegion');
+                                  if (searchRegion != null && searchRegion.isNotEmpty && _regionsListFromFile.isNotEmpty) {
+                                    var foundRegion = _regionsListFromFile.firstWhere((region) => region.name == searchRegion);
+                                    print('found region: $foundRegion');
+                                    _markedRegion = foundRegion;
+                                  } else {
+                                    print(_regionsListFromFile);
+                                  }
+                                }
+                              },
+                              child: const Text('Suche'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text('Zoom'),
+                    ),
+                    Slider.adaptive(
+                      value: hexSize,
+                      min: 60,
+                      max: 100,
                       activeColor: Colors.lightBlueAccent,
                       onChanged: (value) => setState(() {
-                        showControls = value;
+                        hexSize = value;
                       }),
                     ),
                   ])
@@ -130,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         Align(
           alignment: Alignment.topRight,
           child: Visibility(
-            visible: showControls,
+            visible: true,
             child: Theme(
               data: ThemeData(colorScheme: ColorScheme.dark()),
               child: Card(
@@ -252,20 +305,26 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   SingleChildScrollView showMap(
       RegionList rl, Size size, TabController tabController) {
     var indexZero =
-        rl.regions.indexWhere((region) => region.x == 0 && region.y == 0);
-    int centerX = indexZero > 0 ? 0 : rl.maxX - (rl.maxX - rl.minX) ~/ 2;
-    int centerY = indexZero > 0 ? 0 : rl.maxY - (rl.maxY - rl.minY) ~/ 2;
+        rl.regions.indexWhere((region) => region.x == _markedRegion.x && region.y == _markedRegion.y);
+    int centerX = indexZero > 0 ? _markedRegion.x : rl.maxX - (rl.maxX - rl.minX) ~/ 2;
+    int centerY = indexZero > 0 ? _markedRegion.y : rl.maxY - (rl.maxY - rl.minY) ~/ 2;
     int maxColumns = rl.maxX - rl.minX + 1;
     int maxRows = rl.maxY - rl.minY + 1;
-    int columns = maxColumns > (size.width.toInt() ~/ 80)
-        ? (size.width.toInt() ~/ 80)
+    int columns = maxColumns > (size.width.toInt() ~/ hexSize)
+        ? (size.width.toInt() ~/ hexSize)
         : maxColumns;
-    int rows = maxRows > (size.height.toInt() ~/ 80) * 2 ? (size.height.toInt() ~/ 80) * 2 : maxRows;
-    int yOffset = rl.maxY - (centerY + rows ~/2) + _verticalDrag;
-    int xOffset = centerX - (columns ~/ 2) - (rl.maxY - yOffset - centerY) ~/ 2 + _horizontalDrag;
+    int rows = maxRows > (size.height.toInt() ~/ hexSize) * 2
+        ? (size.height.toInt() ~/ hexSize) * 2
+        : maxRows;
+    int yOffset = rl.maxY - (centerY + rows ~/ 2) + _verticalDrag;
+    yOffset = yOffset > 0 ? yOffset : 0;
+    int xOffset = centerX -
+        (columns ~/ 2) -
+        (rl.maxY - yOffset - centerY) ~/ 2 +
+        _horizontalDrag;
 
     print(
-        'min (${rl.minX}, ${rl.minY}), max (${rl.maxX}, ${rl.maxY}), center ($centerX, $centerY), col $columns, rows $rows, xOffset $xOffset, yOffset $yOffset / Size ${size.width} / horizontalDrag $_horizontalDrag / verticalDrag $_verticalDrag');
+        'min (${rl.minX}, ${rl.minY}), max (${rl.maxX}, ${rl.maxY}), center ($centerX, $centerY), col $columns, rows $rows, xOffset $xOffset, yOffset $yOffset / Size ${size.width} / horizontalDrag $_horizontalDrag / verticalDrag $_verticalDrag / hexSize $hexSize');
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
@@ -281,7 +340,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               int x = col +
                   xOffset +
                   (row ~/ 2) -
-                  ((rl.maxY+yOffset).isOdd ? (y.isOdd ? 1 : 0) : (y.isOdd ? 0 : 1));
+                  ((rl.maxY + yOffset).isOdd
+                      ? (y.isOdd ? 1 : 0)
+                      : (y.isOdd ? 0 : 1));
               Region found = rl.regions.firstWhere(
                   (region) => region.x == x && region.y == y,
                   orElse: () =>
@@ -342,6 +403,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   }
                   break;
 
+                case "Vulkan":
+                  {
+                    color = Colors.black54;
+                  }
+                  break;
+
                 default:
                   {
                     color = Colors.black;
@@ -378,23 +445,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                         });
                       }
                     },
-                  onVerticalDragUpdate:
-                      (DragUpdateDetails dragUpdateDetails) {
-                    var currTime = DateTime.now().millisecondsSinceEpoch;
-                    var diffTime = currTime - _lastDragTime;
-                    if (diffTime > 100) {
-                      _lastDragTime = currTime;
-                      print(
-                          'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
-                      setState(() {
-                        if (dragUpdateDetails.primaryDelta != 0) {
-                          dragUpdateDetails.primaryDelta > 0
-                              ? _verticalDrag--
-                              : _verticalDrag++;
-                        }
-                      });
-                    }
-                  }),
+                    onVerticalDragUpdate:
+                        (DragUpdateDetails dragUpdateDetails) {
+                      var currTime = DateTime.now().millisecondsSinceEpoch;
+                      var diffTime = currTime - _lastDragTime;
+                      if (diffTime > 100) {
+                        _lastDragTime = currTime;
+                        print(
+                            'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
+                        setState(() {
+                          if (dragUpdateDetails.primaryDelta != 0) {
+                            dragUpdateDetails.primaryDelta > 0
+                                ? _verticalDrag--
+                                : _verticalDrag++;
+                          }
+                        });
+                      }
+                    }),
               );
             },
           )
@@ -661,7 +728,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 } else {
                   print("file stream empty");
                 }
-                print(myRegionsList);
+//                print(myRegionsList);
               }
               setState(() {
                 _regionsListFromFile = myRegionsList;

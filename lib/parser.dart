@@ -65,7 +65,7 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
         region = Region(id, x, y, name, terrain, description, trees, saplings,
             peasants, horses, silver, entertainment, recruits, wage);
         regionList.add(region);
-        print("$count " + region.toString());
+//        print("$count " + region.toString());
         id = "";
         name = "";
         terrain = "";
