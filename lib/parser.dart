@@ -22,7 +22,7 @@ void main() async {
 }
 
 Future<List<Region>> readFileByLines() async {
-  File file = new File('./assets/Andune.cr');
+  File file = new File('./assets/Andune.txt');
   Uint8List inputStream = file.readAsBytesSync();
 
   return readFileByLinesForStream(inputStream) as Future<List<Region>>;
@@ -163,7 +163,7 @@ Future<List<Region>> getRegionsLocally() async {
   int wage = 0;
   int count = 0;
 
-  final data = await rootBundle.loadString('./assets/Andune.cr');
+  final data = await rootBundle.loadString('./assets/Andune.txt');
 
   LineSplitter ls = new LineSplitter();
   List<String> lines = ls.convert(data);

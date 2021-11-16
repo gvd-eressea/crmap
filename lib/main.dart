@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int depth = 1;
   List<int> depths = [0, 1, 2, 3, 4];
   HexagonType type = HexagonType.FLAT;
-  bool hasControls = true;
+  bool hasControls = false;
   double hexSize = 80;
 
   TabController tabController;
@@ -61,6 +61,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     _regionsListFromFile = [];
     _markedRegion = Region("", 0, 0, "", "", "", 0, 0, 0, 0, 0, 0, 0, 0);
     _horizontalDrag = 0;
+  }
+
+  @override
+  void deactivate() {
+    tabController.dispose();
+    super.deactivate();
   }
 
   void _onTabChange() {
@@ -87,9 +93,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           bottom: TabBar(
             controller: tabController,
             tabs: [
-              Tab(text: 'CR öffnen'),
+              Tab(text: 'Datei'),
               // Tab(text: 'Grid'),
-              Tab(text: 'Karte'),
+              Tab(key: Key('map'), text: 'Karte'),
               Tab(text: 'Region'),
               Tab(text: 'Beispiel'),
             ],
@@ -163,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ),
         body: TabBarView(
           controller: tabController,
-          physics: NeverScrollableScrollPhysics(),
+          physics: ClampingScrollPhysics(),
           children: [
             _openFile(),
             // _buildStack(context),
@@ -176,6 +182,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     );
   }
 
+  // ignore: unused_element
   Stack _buildStack(BuildContext context) {
     return Stack(
       children: [
@@ -416,15 +423,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   break;
               }
               return HexagonWidgetBuilder(
+                key: Key('$x,$y'),
                 elevation: col.toDouble(),
                 padding: 1.0,
                 color: color,
                 child: GestureDetector(
                     child: Text(
-                        '${found.name == "" ? found.terrain : found.name} / ${x},${y}'),
+                        '${found.name == "" ? found.terrain : found.name} / $x,$y'),
                     onTap: () {
                       print(
-                          '${found.name == "" ? found.terrain : found.name} / ${x},${y} / ($col,$row)');
+                          '${found.name == "" ? found.terrain : found.name} / $x,$y / ($col,$row)');
                       tabController.animateTo(tabController.index + 1);
                       _markedRegion = found;
                     },
@@ -470,6 +478,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     );
   }
 
+  // ignore: unused_element
   Widget _buildVerticalGrid() {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
@@ -501,6 +510,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Card(
+            key: Key('regionCard'),
             elevation: 1,
             color: Colors.white,
             child: Column(
@@ -564,7 +574,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Widget _buildMore(Size size) {
     var padding = 1.0;
     var w = (size.width - 4 * padding) / 4;
-    var h = 150.0;
+    // var h = 150.0;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SingleChildScrollView(
@@ -710,6 +720,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         children: <Widget>[
           const SizedBox(height: 30),
           ElevatedButton(
+            key: Key('openCR'),
             style: style,
             onPressed: () async {
               var myRegionsList;
