@@ -11,20 +11,34 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:crmap_app/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('CR map smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+    var myApp = MyApp();
+    await tester.pumpWidget(myApp);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that app starts with 'file open' tab.
+    expect(find.byKey(Key('openCR')), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Tap the map tab and trigger a frame.
+    await tester.tap(find.byKey(Key('map')));
+    await tester.pumpAndSettle();
+
+    // Verify that app switches tab.
+    expect(find.byKey(Key('openCR')), findsNothing);
+    // Verify that the map with at least one ocean field is shown.
+    expect(find.byWidgetPredicate((widget) {
+      return (widget is Text && widget.data.contains('Ozean / -1,8'));
+    }),findsOneWidget);
+
+    // Tap the ocean region and trigger a frame.
+    await tester.tap(find.byWidgetPredicate((widget) {
+      return (widget is Text && widget.data.contains('Ozean / -1,8'));
+    }));
+    await tester.pumpAndSettle();
+
+    // Verify that app switches tab.
+    expect(find.byKey(Key('openCR')), findsNothing);
+    expect(find.byKey(Key('regionCard')), findsOneWidget);
   });
 }
