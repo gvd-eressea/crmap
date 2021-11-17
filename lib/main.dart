@@ -428,8 +428,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 padding: 1.0,
                 color: color,
                 child: GestureDetector(
-                    child: Text(
-                        '${found.name == "" ? found.terrain : found.name} / $x,$y'),
+                    child: Stack(
+                      children: [AspectRatio(
+                          aspectRatio: HexagonType.POINTY.ratio,
+                          child: Image.asset(
+                            found.terrain == "" ? "images/unbekannt.gif" : "images/"+(found.terrain=="Wüste"?"wueste":found.terrain)+".gif",
+                            fit: BoxFit.fitHeight,
+                          )
+                      ),
+                        Center(child: Text('${found.name == "" ? found.terrain : found.name} / $x,$y'))],
+                    )
+                    ,
                     onTap: () {
                       print(
                           '${found.name == "" ? found.terrain : found.name} / $x,$y / ($col,$row)');
@@ -437,39 +446,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       _markedRegion = found;
                     },
                     onHorizontalDragUpdate:
-                        (DragUpdateDetails dragUpdateDetails) {
-                      var currTime = DateTime.now().millisecondsSinceEpoch;
-                      var diffTime = currTime - _lastDragTime;
-                      if (diffTime > 100) {
-                        _lastDragTime = currTime;
-                        print(
-                            'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
-                        setState(() {
-                          if (dragUpdateDetails.primaryDelta != 0) {
-                            dragUpdateDetails.primaryDelta > 0
-                                ? _horizontalDrag--
-                                : _horizontalDrag++;
-                          }
-                        });
-                      }
-                    },
+                        calculateHorizontalDrag,
                     onVerticalDragUpdate:
-                        (DragUpdateDetails dragUpdateDetails) {
-                      var currTime = DateTime.now().millisecondsSinceEpoch;
-                      var diffTime = currTime - _lastDragTime;
-                      if (diffTime > 100) {
-                        _lastDragTime = currTime;
-                        print(
-                            'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
-                        setState(() {
-                          if (dragUpdateDetails.primaryDelta != 0) {
-                            dragUpdateDetails.primaryDelta > 0
-                                ? _verticalDrag--
-                                : _verticalDrag++;
-                          }
-                        });
-                      }
-                    }),
+                        calculateVerticalDrag),
               );
             },
           )
@@ -477,6 +456,40 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       ),
     );
   }
+
+  void calculateHorizontalDrag(DragUpdateDetails dragUpdateDetails) {
+    var currTime = DateTime.now().millisecondsSinceEpoch;
+    var diffTime = currTime - _lastDragTime;
+    if (diffTime > 100) {
+      _lastDragTime = currTime;
+      print(
+          'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
+      setState(() {
+        if (dragUpdateDetails.primaryDelta != 0) {
+          dragUpdateDetails.primaryDelta > 0
+              ? _horizontalDrag--
+              : _horizontalDrag++;
+        }
+      });
+    }
+  }
+
+  void calculateVerticalDrag(DragUpdateDetails dragUpdateDetails) {
+          var currTime = DateTime.now().millisecondsSinceEpoch;
+          var diffTime = currTime - _lastDragTime;
+          if (diffTime > 100) {
+            _lastDragTime = currTime;
+            print(
+                'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
+            setState(() {
+              if (dragUpdateDetails.primaryDelta != 0) {
+                dragUpdateDetails.primaryDelta > 0
+                    ? _verticalDrag--
+                    : _verticalDrag++;
+              }
+            });
+          }
+        }
 
   // ignore: unused_element
   Widget _buildVerticalGrid() {
@@ -667,7 +680,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   child: RegionWidget(
                     key: UniqueKey(),
                     width: w,
-                    name: 'images/wueste.gif',
+                    name: 'images/wüste.gif',
                   ),
                 ),
                 Padding(
@@ -767,13 +780,16 @@ class RegionWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return HexagonWidget.pointy(
       width: width,
-      child: AspectRatio(
-        aspectRatio: HexagonType.POINTY.ratio,
-        child: Image.asset(
-          name,
-          fit: BoxFit.fitHeight,
+      child: Stack(
+        children: [AspectRatio(
+          aspectRatio: HexagonType.POINTY.ratio,
+          child: Image.asset(
+              name,
+              fit: BoxFit.fitHeight,
+            )
+          ),
+          Center(child: Text(name))],
         ),
-      ),
     );
   }
 }
