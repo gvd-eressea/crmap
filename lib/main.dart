@@ -129,14 +129,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
                             child: ElevatedButton(
                               onPressed: () {
                                 if (_formKey.currentState.validate()) {
                                   _formKey.currentState.save();
                                   print('searchRegion: $searchRegion');
-                                  if (searchRegion != null && searchRegion.isNotEmpty && _regionsListFromFile.isNotEmpty) {
-                                    var foundRegion = _regionsListFromFile.firstWhere((region) => region.name == searchRegion);
+                                  if (searchRegion != null &&
+                                      searchRegion.isNotEmpty &&
+                                      _regionsListFromFile.isNotEmpty) {
+                                    var foundRegion = _regionsListFromFile
+                                        .firstWhere((region) =>
+                                            region.name == searchRegion);
                                     print('found region: $foundRegion');
                                     _markedRegion = foundRegion;
                                   } else {
@@ -311,10 +316,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   SingleChildScrollView showMap(
       RegionList rl, Size size, TabController tabController) {
-    var indexZero =
-        rl.regions.indexWhere((region) => region.x == _markedRegion.x && region.y == _markedRegion.y);
-    int centerX = indexZero > 0 ? _markedRegion.x : rl.maxX - (rl.maxX - rl.minX) ~/ 2;
-    int centerY = indexZero > 0 ? _markedRegion.y : rl.maxY - (rl.maxY - rl.minY) ~/ 2;
+    var indexZero = rl.regions.indexWhere(
+        (region) => region.x == _markedRegion.x && region.y == _markedRegion.y);
+    int centerX =
+        indexZero > 0 ? _markedRegion.x : rl.maxX - (rl.maxX - rl.minX) ~/ 2;
+    int centerY =
+        indexZero > 0 ? _markedRegion.y : rl.maxY - (rl.maxY - rl.minY) ~/ 2;
     int maxColumns = rl.maxX - rl.minX + 1;
     int maxRows = rl.maxY - rl.minY + 1;
     int columns = maxColumns > (size.width.toInt() ~/ hexSize)
@@ -429,26 +436,34 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 color: color,
                 child: GestureDetector(
                     child: Stack(
-                      children: [AspectRatio(
-                          aspectRatio: HexagonType.POINTY.ratio,
-                          child: Image.asset(
-                            found.terrain == "" ? "images/unbekannt.gif" : "images/"+(found.terrain=="Wüste"?"wueste":found.terrain)+".gif",
-                            fit: BoxFit.fitHeight,
-                          )
-                      ),
-                        Center(child: Text('${found.name == "" ? found.terrain : found.name} / $x,$y'))],
-                    )
-                    ,
+                      children: [
+                        AspectRatio(
+                            aspectRatio: HexagonType.POINTY.ratio,
+                            child: Image.asset(
+                              found.terrain == ""
+                                  ? "images/unbekannt.gif"
+                                  : "images/" +
+                                      (found.terrain == "Wüste"
+                                          ? "wueste"
+                                          : (found.terrain == "Aktiver Vulkan"
+                                              ? "aktivervulkan"
+                                              : found.terrain.toLowerCase())) +
+                                      ".gif",
+                              fit: BoxFit.fitHeight,
+                            )),
+                        Center(
+                            child: Text(
+                                '${found.name == "" ? found.terrain : found.name} / $x,$y'))
+                      ],
+                    ),
                     onTap: () {
                       print(
                           '${found.name == "" ? found.terrain : found.name} / $x,$y / ($col,$row)');
                       tabController.animateTo(tabController.index + 1);
                       _markedRegion = found;
                     },
-                    onHorizontalDragUpdate:
-                        calculateHorizontalDrag,
-                    onVerticalDragUpdate:
-                        calculateVerticalDrag),
+                    onHorizontalDragUpdate: calculateHorizontalDrag,
+                    onVerticalDragUpdate: calculateVerticalDrag),
               );
             },
           )
@@ -475,21 +490,21 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   void calculateVerticalDrag(DragUpdateDetails dragUpdateDetails) {
-          var currTime = DateTime.now().millisecondsSinceEpoch;
-          var diffTime = currTime - _lastDragTime;
-          if (diffTime > 100) {
-            _lastDragTime = currTime;
-            print(
-                'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
-            setState(() {
-              if (dragUpdateDetails.primaryDelta != 0) {
-                dragUpdateDetails.primaryDelta > 0
-                    ? _verticalDrag--
-                    : _verticalDrag++;
-              }
-            });
-          }
+    var currTime = DateTime.now().millisecondsSinceEpoch;
+    var diffTime = currTime - _lastDragTime;
+    if (diffTime > 100) {
+      _lastDragTime = currTime;
+      print(
+          'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
+      setState(() {
+        if (dragUpdateDetails.primaryDelta != 0) {
+          dragUpdateDetails.primaryDelta > 0
+              ? _verticalDrag--
+              : _verticalDrag++;
         }
+      });
+    }
+  }
 
   // ignore: unused_element
   Widget _buildVerticalGrid() {
@@ -680,7 +695,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   child: RegionWidget(
                     key: UniqueKey(),
                     width: w,
-                    name: 'images/wüste.gif',
+                    name: 'images/wueste.gif',
                   ),
                 ),
                 Padding(
@@ -704,7 +719,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   child: RegionWidget(
                     key: UniqueKey(),
                     width: w,
-                    name: 'images/aktiver vulkan.gif',
+                    name: 'images/aktivervulkan.gif',
                   ),
                 ),
                 Padding(
@@ -781,15 +796,16 @@ class RegionWidget extends StatelessWidget {
     return HexagonWidget.pointy(
       width: width,
       child: Stack(
-        children: [AspectRatio(
-          aspectRatio: HexagonType.POINTY.ratio,
-          child: Image.asset(
-              name,
-              fit: BoxFit.fitHeight,
-            )
-          ),
-          Center(child: Text(name))],
-        ),
+        children: [
+          AspectRatio(
+              aspectRatio: HexagonType.POINTY.ratio,
+              child: Image.asset(
+                name,
+                fit: BoxFit.fitHeight,
+              )),
+          Center(child: Text(name))
+        ],
+      ),
     );
   }
 }
