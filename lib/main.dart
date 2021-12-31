@@ -1,29 +1,48 @@
 import 'dart:io';
 
+// import 'package:archive/archive.dart';
 import 'package:crmap_app/parser.dart';
 import 'package:crmap_app/region.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hexagon/hexagon.dart';
+// import 'package:path/path.dart' as p;
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter CR Map',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: myBlue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(key: UniqueKey(), title: 'Eressea'),
     );
   }
 }
+
+const MaterialColor myBlue = MaterialColor(
+  _myBluePrimaryValue,
+  <int, Color>{
+    50: Color(0xFFE3F2FD),
+    100: Color(0xFFDA8888),
+    200: Color(0xFFAF7486),
+    300: Color(0xFF835F83),
+    400: Color(0xFF614F82),
+    500: Color(_myBluePrimaryValue),
+    600: Color(0xFF1E88E5),
+    700: Color(0xFF1976D2),
+    800: Color(0xFF1565C0),
+    900: Color(0xFF0D47A1),
+  },
+);
+const int _myBluePrimaryValue = 0xFF404080;
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -55,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    tabController = TabController(initialIndex: 0, length: 4, vsync: this);
+    tabController = TabController(initialIndex: 0, length: 3, vsync: this);
     tabController.addListener(_onTabChange);
     _regionsList = getRegionsLocally();
     _regionsListFromFile = [];
@@ -94,69 +113,59 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             controller: tabController,
             tabs: [
               Tab(text: 'Datei'),
-              // Tab(text: 'Grid'),
               Tab(key: Key('map'), text: 'Karte'),
               Tab(text: 'Region'),
-              Tab(text: 'Beispiel'),
             ],
           ),
           title: Text(widget.title),
           actions: hasControls
               ? [
                   Row(children: [
-                    Form(
-                      key: _formKey,
-                      child: Row(
-                        children: <Widget>[
-                          ConstrainedBox(
-                            constraints:
-                                BoxConstraints.tight(const Size(200, 50)),
-                            child: TextFormField(
-                              decoration: const InputDecoration(
-                                hintText: 'Regionssuche',
-                              ),
-                              validator: (String value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Bitte Regionsnamen eingeben';
-                                }
-                                return null;
-                              },
-                              onSaved: (String value) {
-                                setState(() {
-                                  searchRegion = value;
-                                });
-                              },
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: ElevatedButton(
-                              onPressed: () {
-                                if (_formKey.currentState.validate()) {
-                                  _formKey.currentState.save();
-                                  print('searchRegion: $searchRegion');
-                                  if (searchRegion != null &&
-                                      searchRegion.isNotEmpty &&
-                                      _regionsListFromFile.isNotEmpty) {
-                                    var foundRegion = _regionsListFromFile
-                                        .firstWhere((region) =>
-                                            region.name == searchRegion);
-                                    print('found region: $foundRegion');
-                                    _markedRegion = foundRegion;
-                                  } else {
-                                    print(_regionsListFromFile);
+                    GestureDetector(
+                      child: Form(
+                        key: _formKey,
+                        child: Row(
+                          children: <Widget>[
+                            ConstrainedBox(
+                              constraints:
+                                  BoxConstraints.tight(Size(size.width / 4, 50)),
+                              child: TextFormField(
+                                decoration: const InputDecoration(
+                                  hintText: 'Regionssuche',
+                                ),
+                                validator: (String value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Bitte Regionsnamen eingeben';
                                   }
-                                }
-                              },
-                              child: const Text('Suche'),
+                                  return null;
+                                },
+                                onSaved: (String value) {
+                                  setState(() {
+                                    searchRegion = value;
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                        ],
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  findRegionByPartOfName();
+                                  FocusScopeNode currentFocus = FocusScope.of(context);
+                                  if (!currentFocus.hasPrimaryFocus) {
+                                    currentFocus.unfocus();
+                                  }
+                                },
+                                child: Icon(Icons.search),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Text('Zoom'),
                     ),
                     Slider.adaptive(
@@ -177,118 +186,43 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           physics: ClampingScrollPhysics(),
           children: [
             _openFile(),
-            // _buildStack(context),
             _buildHorizontalGrid(context, size, tabController),
             _buildRegion(),
-            _buildMore(size),
           ],
         ),
       ),
     );
   }
 
-  // ignore: unused_element
-  Stack _buildStack(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(child: _buildGrid(context, type)),
-        Align(
-          alignment: Alignment.topRight,
-          child: Visibility(
-            visible: true,
-            child: Theme(
-              data: ThemeData(colorScheme: ColorScheme.dark()),
-              child: Card(
-                margin: EdgeInsets.all(8.0),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 2.0, horizontal: 16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DropdownButton<HexagonType>(
-                        onChanged: (value) => this.setState(() {
-                          type = value;
-                        }),
-                        value: type,
-                        items: [
-                          DropdownMenuItem<HexagonType>(
-                            value: HexagonType.FLAT,
-                            child: Text('Flat'),
-                          ),
-                          DropdownMenuItem<HexagonType>(
-                            value: HexagonType.POINTY,
-                            child: Text('Pointy'),
-                          )
-                        ],
-                        selectedItemBuilder: (context) => [
-                          Center(child: Text('Flat')),
-                          Center(child: Text('Pointy')),
-                        ],
-                      ),
-                      DropdownButton<int>(
-                        onChanged: (value) => this.setState(() {
-                          depth = value;
-                        }),
-                        value: depth,
-                        items: depths
-                            .map((e) => DropdownMenuItem<int>(
-                                  value: e,
-                                  child: Text('Depth: $e'),
-                                ))
-                            .toList(),
-                        selectedItemBuilder: (context) {
-                          return depths
-                              .map((e) => Center(child: Text('Depth: $e')))
-                              .toList();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+  /// Find region where the region name contains the entered search string.
+  void findRegionByPartOfName() {
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+      print('searchRegion: $searchRegion');
+      if (searchRegion != null &&
+          searchRegion.isNotEmpty &&
+          _regionsListFromFile.isNotEmpty) {
+        var foundRegion =
+            _regionsListFromFile.firstWhere(
+                (region) => region.name
+                    .contains(searchRegion),
+                orElse: nothingFound);
+        print('found region: $foundRegion');
+        _markedRegion = foundRegion;
+      } else {
+        print(_regionsListFromFile);
+      }
+    }
   }
-
-  Widget _buildGrid(BuildContext context, HexagonType type) {
-    return InteractiveViewer(
-      minScale: 0.2,
-      maxScale: 4.0,
-      child: HexagonGrid(
-        hexType: type,
-        color: Colors.pink,
-        depth: depth,
-        buildTile: (coordinates) => HexagonWidgetBuilder(
-          padding: 2.0,
-          cornerRadius: 8.0,
-          child: Stack(children: [
-            Align(
-              child: Image.asset(
-                'images/wald.gif',
-                fit: BoxFit.cover,
-              ),
-              alignment: Alignment.center,
-            ),
-            Align(
-              child: Text(
-                  '${coordinates.q + coordinates.r},${-1 * coordinates.r}',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              alignment: Alignment.center,
-            ),
-          ]),
-        ),
-      ),
-    );
+  /// If entered search string is not found in any region name the old marked region will be returned.
+  Region nothingFound() {
+    print('No region found! Return old marked region: ' + _markedRegion.name);
+    return _markedRegion;
   }
 
   Widget _buildHorizontalGrid(
       BuildContext context, Size size, TabController tabController) {
-    if (_regionsListFromFile.length > 0) {
+    if (_regionsListFromFile != null && _regionsListFromFile.length > 0) {
       RegionList rl = RegionList(_regionsListFromFile);
       return showMap(rl, size, tabController);
     } else {
@@ -506,31 +440,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-  // ignore: unused_element
-  Widget _buildVerticalGrid() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Marked Region: ' + _markedRegion.terrain),
-          HexagonOffsetGrid.evenPointy(
-            color: Colors.yellow.shade100,
-            padding: EdgeInsets.all(8.0),
-            columns: 5,
-            rows: 20,
-            buildTile: (col, row) => HexagonWidgetBuilder(
-              color: row.isEven ? Colors.yellow : Colors.orangeAccent,
-              elevation: 2.0,
-              padding: 1.0,
-            ),
-            buildChild: (col, row) => Text('$col, $row'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildRegion() {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
@@ -599,145 +508,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildMore(Size size) {
-    var padding = 1.0;
-    var w = (size.width - 4 * padding) / 4;
-    // var h = 150.0;
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/berge.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/ebene.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/ozean.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/hochland.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/sumpf.gif',
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/feuerwand.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/vulkan.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/wald.gif',
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/wueste.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/unbekannt.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/ozean.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/aktivervulkan.gif',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: RegionWidget(
-                    key: UniqueKey(),
-                    width: w,
-                    name: 'images/sumpf.gif',
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _openFile() {
     final ButtonStyle style =
         ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20));
@@ -751,33 +521,54 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             key: Key('openCR'),
             style: style,
             onPressed: () async {
-              var myRegionsList;
-              FilePickerResult result =
-                  await FilePicker.platform.pickFiles(type: FileType.any);
-              if (result != null) {
-                var fileStream = result.files.first.bytes;
-                if (fileStream == null) {
-                  File file = File(result.files.single.path);
-                  fileStream = file.readAsBytesSync();
-                }
-                if (fileStream != null) {
-                  print("File stream length: " +
-                      fileStream.lengthInBytes.toString());
-                  myRegionsList = readFileByLinesForStream(fileStream);
-                } else {
-                  print("file stream empty");
-                }
-//                print(myRegionsList);
-              }
+              var myRegionsList = await openFile();
               setState(() {
                 _regionsListFromFile = myRegionsList;
               });
+              tabController.animateTo(tabController.index + 1);
             },
             child: const Text('CR öffnen'),
           ),
         ],
       ),
     );
+  }
+
+  Future<dynamic> openFile() async {
+    var myRegionsList = [];
+    FilePickerResult result =
+        await FilePicker.platform.pickFiles(type: FileType.any);
+    if (result != null) {
+//      var fileName = result.files.first.name;
+//      print("File " + fileName + " has extension " + p.context.extension(fileName));
+//      var isZipFile = p.context.extension(fileName) == '.zip';
+      var fileStream = result.files.first.bytes;
+      if (fileStream == null) {
+        File file = File(result.files.single.path);
+        fileStream = file.readAsBytesSync();
+      }
+      if (fileStream != null) {
+//        if (isZipFile) {
+//          print("Decompress zip file and find cr file.");
+//          final archive = new ZipDecoder().decodeBytes(fileStream);
+//          for (var file in archive) {
+//            if (file.isFile) {
+//              if (p.context.extension(file.name)== '.cr') {
+//                print("Found cr file "+ file.name);
+//                fileStream = file.rawContent.toUint8List();
+//                break;
+//              }
+//            }
+//          }
+        print("File stream length: " + fileStream.lengthInBytes.toString());
+        myRegionsList = readFileByLinesForStream(fileStream);
+//      }
+      } else {
+        print("file stream empty");
+      }
+      //                print(myRegionsList);
+    }
+    return myRegionsList;
   }
 }
 
