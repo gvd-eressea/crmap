@@ -26,7 +26,7 @@ void main() {
 
     // Verify that app switches tab.
     expect(find.byKey(Key('openCR')), findsNothing);
-    // Verify that the map with at least one ocean field is shown.
+    // Verify that the map with ocean field is shown.
     expect(find.byWidgetPredicate((widget) {
       return (widget is Text && widget.data.contains('Ozean / -1,8'));
     }),findsOneWidget);

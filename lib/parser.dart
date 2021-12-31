@@ -55,21 +55,25 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
 
   List<String> lines = Utf8Decoder().convert(inputStream).split('\n');
   for (var line in lines) {
-//      .transform(utf8.decoder) // Decode bytes to UTF-8.
-//      .transform(new LineSplitter()) // Convert stream to individual lines.
-//      .listen((String line) {
-    // Process results.
     if (line.startsWith("REGION")) {
       regionActive = true;
       if (regionList.length < count) {
         region = Region(id, x, y, name, terrain, description, trees, saplings,
             peasants, horses, silver, entertainment, recruits, wage);
         regionList.add(region);
-//        print("$count " + region.toString());
+        // reset to initial values
         id = "";
         name = "";
         terrain = "";
         description = "";
+        trees = 0;
+        saplings = 0;
+        peasants = 0;
+        horses = 0;
+        silver = 0;
+        entertainment = 0;
+        recruits = 0;
+        wage = 0;
       }
       List<String> split = line.split(" ");
       x = int.parse(split.elementAt(1));
@@ -127,7 +131,6 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
       }
     }
   }
-  //, onDone: () {
   print('File is now closed.');
   if (regionList.length < count) {
     region = Region(id, x, y, name, terrain, description, trees, saplings,
@@ -135,11 +138,6 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
     regionList.add(region);
     print("Last: $count " + region.toString());
   }
-  // returnList =  regionList as Future<List<Region>>;
-//  }, onError: (e) {
-//    print(e.toString());
-  // returnList = regionList as Future<List<Region>>;
-//  });
 
   return regionList;
 }
@@ -174,9 +172,19 @@ Future<List<Region>> getRegionsLocally() async {
             peasants, horses, silver, entertainment, recruits, wage);
         regionList.add(region);
         print("$count " + region.toString());
+        // reset to initial values
         id = "";
         name = "";
         terrain = "";
+        description = "";
+        trees = 0;
+        saplings = 0;
+        peasants = 0;
+        horses = 0;
+        silver = 0;
+        entertainment = 0;
+        recruits = 0;
+        wage = 0;
       }
       List<String> split = line.split(" ");
       x = int.parse(split.elementAt(1));
