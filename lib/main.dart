@@ -1,13 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
-// import 'package:archive/archive.dart';
+import 'package:archive/archive.dart';
 import 'package:crmap_app/parser.dart';
 import 'package:crmap_app/region.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hexagon/hexagon.dart';
-// import 'package:path/path.dart' as p;
+import 'package:path/path.dart' as p;
 
 void main() {
   runApp(MyApp());
@@ -127,8 +127,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                         child: Row(
                           children: <Widget>[
                             ConstrainedBox(
-                              constraints:
-                                  BoxConstraints.tight(Size(size.width / 4, 50)),
+                              constraints: BoxConstraints.tight(
+                                  Size(size.width / 4, 50)),
                               child: TextFormField(
                                 decoration: const InputDecoration(
                                   hintText: 'Regionssuche',
@@ -152,7 +152,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                               child: ElevatedButton(
                                 onPressed: () {
                                   findRegionByPartOfName();
-                                  FocusScopeNode currentFocus = FocusScope.of(context);
+                                  FocusScopeNode currentFocus =
+                                      FocusScope.of(context);
                                   if (!currentFocus.hasPrimaryFocus) {
                                     currentFocus.unfocus();
                                   }
@@ -202,11 +203,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       if (searchRegion != null &&
           searchRegion.isNotEmpty &&
           _regionsListFromFile.isNotEmpty) {
-        var foundRegion =
-            _regionsListFromFile.firstWhere(
-                (region) => region.name
-                    .contains(searchRegion),
-                orElse: nothingFound);
+        var foundRegion = _regionsListFromFile.firstWhere(
+            (region) => region.name.contains(searchRegion),
+            orElse: nothingFound);
         print('found region: $foundRegion');
         _markedRegion = foundRegion;
       } else {
@@ -214,6 +213,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       }
     }
   }
+
   /// If entered search string is not found in any region name the old marked region will be returned.
   Region nothingFound() {
     print('No region found! Return old marked region: ' + _markedRegion.name);
@@ -363,6 +363,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   }
                   break;
               }
+              var imageName = found.terrain == ""
+                                  ? "images/unbekannt.gif"
+                                  : "images/" +
+                                      (found.terrain == "Wüste"
+                                          ? "wueste"
+                                          : (found.terrain == "Aktiver Vulkan"
+                                              ? "aktivervulkan"
+                                              : found.terrain.toLowerCase())) +
+                                      ".gif";
               return HexagonWidgetBuilder(
                 key: Key('$x,$y'),
                 elevation: col.toDouble(),
@@ -374,15 +383,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                         AspectRatio(
                             aspectRatio: HexagonType.POINTY.ratio,
                             child: Image.asset(
-                              found.terrain == ""
-                                  ? "images/unbekannt.gif"
-                                  : "images/" +
-                                      (found.terrain == "Wüste"
-                                          ? "wueste"
-                                          : (found.terrain == "Aktiver Vulkan"
-                                              ? "aktivervulkan"
-                                              : found.terrain.toLowerCase())) +
-                                      ".gif",
+                              imageName,
                               fit: BoxFit.fitHeight,
                             )),
                         Center(
@@ -539,30 +540,37 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     FilePickerResult result =
         await FilePicker.platform.pickFiles(type: FileType.any);
     if (result != null) {
-//      var fileName = result.files.first.name;
-//      print("File " + fileName + " has extension " + p.context.extension(fileName));
-//      var isZipFile = p.context.extension(fileName) == '.zip';
+      var fileName = result.files.first.name;
+      print("File " +
+          fileName +
+          " has extension " +
+          p.context.extension(fileName));
+      var isZipFile = p.context.extension(fileName) == '.zip';
       var fileStream = result.files.first.bytes;
       if (fileStream == null) {
         File file = File(result.files.single.path);
         fileStream = file.readAsBytesSync();
       }
       if (fileStream != null) {
-//        if (isZipFile) {
-//          print("Decompress zip file and find cr file.");
-//          final archive = new ZipDecoder().decodeBytes(fileStream);
-//          for (var file in archive) {
-//            if (file.isFile) {
-//              if (p.context.extension(file.name)== '.cr') {
-//                print("Found cr file "+ file.name);
-//                fileStream = file.rawContent.toUint8List();
-//                break;
-//              }
-//            }
-//          }
-        print("File stream length: " + fileStream.lengthInBytes.toString());
-        myRegionsList = readFileByLinesForStream(fileStream);
-//      }
+        if (isZipFile) {
+          var content = "";
+          print("Decompress zip file and find cr file.");
+          final archive = new ZipDecoder().decodeBytes(fileStream);
+          for (var file in archive) {
+            if (file.isFile) {
+              if (p.context.extension(file.name) == '.cr') {
+                print("Found cr file " + file.name);
+                content = utf8.decode(file.content);
+                break;
+              }
+            }
+          }
+          print("File content length: " + content.length.toString());
+          myRegionsList = readFileByLinesForString(content);
+        } else {
+          print("File stream length: " + fileStream.lengthInBytes.toString());
+          myRegionsList = readFileByLinesForStream(fileStream);
+        }
       } else {
         print("file stream empty");
       }
