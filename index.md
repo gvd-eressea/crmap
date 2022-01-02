@@ -10,7 +10,7 @@ See tab [Region](https://raw.githubusercontent.com/gvd-eressea/crmap/main/doc/Sc
 
 ### Release
 
-See release [dev-release](https://github.com/gvd-eressea/crmap/releases/tag/dev-release).
+Download apk archive for installation on [dev-release](https://github.com/gvd-eressea/crmap/releases/tag/dev-release).
 
 ### Support or Contact
 
