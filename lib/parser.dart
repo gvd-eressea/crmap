@@ -91,42 +91,18 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
       if (regionActive) {
         List<String> split = line.split(";");
         if (split.length > 1) {
-          if (split.elementAt(1).replaceAll("\r", "") == "id") {
-            id = split.elementAt(0);
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Terrain") {
-            terrain = split.elementAt(0).replaceAll("\"", "");
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Name") {
-            name = split.elementAt(0).replaceAll("\"", "");
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Beschr") {
-            description = split.elementAt(0).replaceAll("\"", "");
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Baeume") {
-            trees = int.parse(split.elementAt(0).replaceAll("\"", ""));
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Schoesslinge") {
-            saplings = int.parse(split.elementAt(0).replaceAll("\"", ""));
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Bauern") {
-            peasants = int.parse(split.elementAt(0).replaceAll("\"", ""));
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Pferde") {
-            horses = int.parse(split.elementAt(0).replaceAll("\"", ""));
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Silber") {
-            silver = int.parse(split.elementAt(0).replaceAll("\"", ""));
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Unterh") {
-            entertainment = int.parse(split.elementAt(0).replaceAll("\"", ""));
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Rekruten") {
-            recruits = int.parse(split.elementAt(0).replaceAll("\"", ""));
-          }
-          if (split.elementAt(1).replaceAll("\r", "") == "Lohn") {
-            wage = int.parse(split.elementAt(0).replaceAll("\"", ""));
-          }
+          id = getStringElement(split, id, "id");
+          terrain = getStringElement(split, terrain, "Terrain");
+          name = getStringElement(split, name, "Name");
+          description = getStringElement(split, description, "Beschr");
+          trees = getIntElement(split, trees, "Baeume");
+          saplings = getIntElement(split, saplings, "Schoesslinge");
+          peasants = getIntElement(split, peasants, "Bauern");
+          horses = getIntElement(split, horses, "Pferde");
+          silver = getIntElement(split, silver, "Silber");
+          entertainment = getIntElement(split, entertainment, "Unterh");
+          recruits = getIntElement(split, recruits, "Rekruten");
+          wage = getIntElement(split, wage, "Lohn");
         }
       }
     }
@@ -140,6 +116,20 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
   }
 
   return regionList;
+}
+
+String getStringElement(List<String> split, String element, String elementName) {
+  if (split.elementAt(1).replaceAll("\r", "") == elementName) {
+    element = split.elementAt(0).replaceAll("\"", "");
+  }
+  return element;
+}
+
+int getIntElement(List<String> split, int element, String elementName) {
+  if (split.elementAt(1).replaceAll("\r", "") == elementName) {
+    element = int.parse(split.elementAt(0).replaceAll("\"", ""));
+  }
+  return element;
 }
 
 Future<List<Region>> getRegionsLocally() async {
@@ -193,42 +183,18 @@ Future<List<Region>> getRegionsLocally() async {
     } else {
       List<String> split = line.split(";");
       if (split.length > 1) {
-        if (split.elementAt(1) == "id") {
-          id = split.elementAt(0);
-        }
-        if (split.elementAt(1) == "Terrain") {
-          terrain = split.elementAt(0).replaceAll("\"", "");
-        }
-        if (split.elementAt(1) == "Name") {
-          name = split.elementAt(0).replaceAll("\"", "");
-        }
-        if (split.elementAt(1) == "Beschr") {
-          description = split.elementAt(0).replaceAll("\"", "");
-        }
-        if (split.elementAt(1) == "Baeume") {
-          trees = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1) == "Schoesslinge") {
-          saplings = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1) == "Bauern") {
-          peasants = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1) == "Pferde") {
-          horses = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1) == "Silber") {
-          silver = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1) == "Unterh") {
-          entertainment = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1) == "Rekruten") {
-          recruits = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
-        if (split.elementAt(1) == "Lohn") {
-          wage = int.parse(split.elementAt(0).replaceAll("\"", ""));
-        }
+        id = getStringElement(split, id, "id");
+        terrain = getStringElement(split, terrain, "Terrain");
+        name = getStringElement(split, name, "Name");
+        description = getStringElement(split, description, "Beschr");
+        trees = getIntElement(split, trees, "Baeume");
+        saplings = getIntElement(split, saplings, "Schoesslinge");
+        peasants = getIntElement(split, peasants, "Bauern");
+        horses = getIntElement(split, horses, "Pferde");
+        silver = getIntElement(split, silver, "Silber");
+        entertainment = getIntElement(split, entertainment, "Unterh");
+        recruits = getIntElement(split, recruits, "Rekruten");
+        wage = getIntElement(split, wage, "Lohn");
       }
     }
   }
@@ -239,5 +205,94 @@ Future<List<Region>> getRegionsLocally() async {
     print("Last: $count " + region.toString());
   }
   print("Found " + regionList.length.toString() + " Regions.");
+  return regionList;
+}
+
+List<Region> readFileByLinesForString(String content) {
+  List<Region> regionList = [];
+  Region region;
+  int x = -9999;
+  int y = -9999;
+  String id = "";
+  String name = "";
+  String terrain = "";
+  String description = "";
+  int trees = 0;
+  int saplings = 0;
+  int peasants = 0;
+  int horses = 0;
+  int silver = 0;
+  int entertainment = 0;
+  int recruits = 0;
+  int wage = 0;
+  int count = 0;
+  var regionActive = false;
+
+  if (content == null) {
+    return regionList;
+  }
+
+  List<String> lines = content.split('\n');
+  for (var line in lines) {
+    if (line.startsWith("REGION")) {
+      regionActive = true;
+      if (regionList.length < count) {
+        region = Region(id, x, y, name, terrain, description, trees, saplings,
+            peasants, horses, silver, entertainment, recruits, wage);
+        regionList.add(region);
+        // reset to initial values
+        id = "";
+        name = "";
+        terrain = "";
+        description = "";
+        trees = 0;
+        saplings = 0;
+        peasants = 0;
+        horses = 0;
+        silver = 0;
+        entertainment = 0;
+        recruits = 0;
+        wage = 0;
+      }
+      List<String> split = line.split(" ");
+      x = int.parse(split.elementAt(1));
+      y = int.parse(split.elementAt(2));
+      count++;
+    } else if (line.startsWith("EINHEIT")) {
+      regionActive = false;
+    } else if (line.startsWith("SCHIFF")) {
+      regionActive = false;
+    } else if (line.startsWith("BURG")) {
+      regionActive = false;
+    } else if (line.startsWith("TRANSLATION")) {
+      regionActive = false;
+    } else {
+      if (regionActive) {
+        List<String> split = line.split(";");
+        if (split.length > 1) {
+          id = getStringElement(split, id, "id");
+          terrain = getStringElement(split, terrain, "Terrain");
+          name = getStringElement(split, name, "Name");
+          description = getStringElement(split, description, "Beschr");
+          trees = getIntElement(split, trees, "Baeume");
+          saplings = getIntElement(split, saplings, "Schoesslinge");
+          peasants = getIntElement(split, peasants, "Bauern");
+          horses = getIntElement(split, horses, "Pferde");
+          silver = getIntElement(split, silver, "Silber");
+          entertainment = getIntElement(split, entertainment, "Unterh");
+          recruits = getIntElement(split, recruits, "Rekruten");
+          wage = getIntElement(split, wage, "Lohn");
+        }
+      }
+    }
+  }
+  print('File is now closed.');
+  if (regionList.length < count) {
+    region = Region(id, x, y, name, terrain, description, trees, saplings,
+        peasants, horses, silver, entertainment, recruits, wage);
+    regionList.add(region);
+    print("Last: $count " + region.toString());
+  }
+
   return regionList;
 }
