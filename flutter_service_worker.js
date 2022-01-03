@@ -33,8 +33,8 @@ const RESOURCES = {
 "assets/assets/Andune.txt": "578aef3a463a5a9da8fab099d39669fb",
 "assets/fonts/MaterialIcons-Regular.otf": "4e6447691c9509f7acdbf8a931a85ca1",
 "assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "6d342eb68f170c97609e9da345464e5e",
-"index.html": "c2e4a69a460f0330d2136ffe2142e065",
-"/": "c2e4a69a460f0330d2136ffe2142e065",
+"index.html": "eab200516eb68429a857f0b8522b4c0a",
+"/": "eab200516eb68429a857f0b8522b4c0a",
 "favicon.png": "654a5f7a0d442bc3207638bd1a19344e",
 "crmap.png": "efed36bf5de0dec4500b0f4e96bbfd98"
 };
