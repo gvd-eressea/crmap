@@ -235,7 +235,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             Object data = snapshot.data;
             if (data is List<Region>) {
               RegionList rl = RegionList(data);
-
+              setState(() {
+                _regionsListFromFile = data;
+              });
               return showMap(rl, size, tabController);
             } else {
               return Text('State: ${snapshot.connectionState}');
