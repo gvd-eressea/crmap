@@ -105,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     var size = MediaQuery.of(context).size;
 
     return DefaultTabController(
-      length: 4,
+      length: 3,
       initialIndex: 0,
       child: Scaffold(
         appBar: AppBar(
