@@ -235,9 +235,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             Object data = snapshot.data;
             if (data is List<Region>) {
               RegionList rl = RegionList(data);
-              setState(() {
-                _regionsListFromFile = data;
-              });
               return showMap(rl, size, tabController);
             } else {
               return Text('State: ${snapshot.connectionState}');
@@ -297,83 +294,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   (region) => region.x == x && region.y == y,
                   orElse: () =>
                       Region("", x, y, "", "", "", 0, 0, 0, 0, 0, 0, 0, 0));
-              var color;
-              switch (found.terrain) {
-                case "Ozean":
-                  {
-                    color = Colors.lightBlue.shade200;
-                  }
-                  break;
-
-                case "Ebene":
-                  {
-                    color = Colors.lightGreen.shade200;
-                  }
-                  break;
-
-                case "Wald":
-                  {
-                    color = Colors.lightGreen.shade500;
-                  }
-                  break;
-
-                case "Hochland":
-                  {
-                    color = Colors.brown.shade400;
-                  }
-                  break;
-
-                case "Wüste":
-                  {
-                    color = Colors.yellow.shade200;
-                  }
-                  break;
-
-                case "Gletscher":
-                  {
-                    color = Colors.white;
-                  }
-                  break;
-
-                case "Berge":
-                  {
-                    color = Colors.black26;
-                  }
-                  break;
-
-                case "Sumpf":
-                  {
-                    color = Colors.green.shade900;
-                  }
-                  break;
-
-                case "Feuerwand":
-                  {
-                    color = Colors.red;
-                  }
-                  break;
-
-                case "Vulkan":
-                  {
-                    color = Colors.black54;
-                  }
-                  break;
-
-                default:
-                  {
-                    color = Colors.black;
-                  }
-                  break;
-              }
+              var color = findColorByTerrain(found);
               var imageName = found.terrain == ""
-                                  ? "images/unbekannt.gif"
-                                  : "images/" +
-                                      (found.terrain == "Wüste"
-                                          ? "wueste"
-                                          : (found.terrain == "Aktiver Vulkan"
-                                              ? "aktivervulkan"
-                                              : found.terrain.toLowerCase())) +
-                                      ".gif";
+                  ? "images/unbekannt.gif"
+                  : "images/" +
+                      (found.terrain == "Wüste"
+                          ? "wueste"
+                          : (found.terrain == "Aktiver Vulkan"
+                              ? "aktivervulkan"
+                              : found.terrain.toLowerCase())) +
+                      ".gif";
               return HexagonWidgetBuilder(
                 key: Key('$x,$y'),
                 elevation: col.toDouble(),
@@ -407,6 +337,68 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ],
       ),
     );
+  }
+
+  findColorByTerrain(Region found) {
+    var color;
+    switch (found.terrain) {
+      case "Ozean":
+        {
+          color = Colors.lightBlue.shade200;
+        }
+        break;
+      case "Ebene":
+        {
+          color = Colors.lightGreen.shade200;
+        }
+        break;
+      case "Wald":
+        {
+          color = Colors.lightGreen.shade500;
+        }
+        break;
+      case "Hochland":
+        {
+          color = Colors.brown.shade400;
+        }
+        break;
+      case "Wüste":
+        {
+          color = Colors.yellow.shade200;
+        }
+        break;
+      case "Gletscher":
+        {
+          color = Colors.white;
+        }
+        break;
+      case "Berge":
+        {
+          color = Colors.black26;
+        }
+        break;
+      case "Sumpf":
+        {
+          color = Colors.green.shade900;
+        }
+        break;
+      case "Feuerwand":
+        {
+          color = Colors.red;
+        }
+        break;
+      case "Vulkan":
+        {
+          color = Colors.black54;
+        }
+        break;
+      default:
+        {
+          color = Colors.black;
+        }
+        break;
+    }
+    return color;
   }
 
   void calculateHorizontalDrag(DragUpdateDetails dragUpdateDetails) {
