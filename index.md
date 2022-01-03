@@ -6,7 +6,7 @@ CRmap is a Flutter application for viewing CR maps of PbeM [Eressea](https://www
 
 See tab Karte ![Screenshot Karte](https://raw.githubusercontent.com/gvd-eressea/crmap/main/doc/Screenshot_Karte.png)
 
-See tab Region ![Screenshot Region](https://raw.githubusercontent.com/gvd-eressea/crmap/main/doc/Screenshot_Region.png).
+See tab Region ![Screenshot Region](https://raw.githubusercontent.com/gvd-eressea/crmap/main/doc/Screenshot_Region.png)
 
 ### Release
 
