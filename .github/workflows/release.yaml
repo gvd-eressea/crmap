@@ -23,7 +23,7 @@ jobs:
         run: flutter pub get
       - name: Test project
         run: flutter test
-      - run: flutter build apk --split-per-abi
+#      - run: flutter build apk --split-per-abi
 #      - name: Create a Release APK
 #        uses: ncipollo/release-action@v1
       #        with:
@@ -43,7 +43,7 @@ jobs:
     name: Deploy
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Download artifact
