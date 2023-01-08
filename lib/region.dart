@@ -5,6 +5,7 @@ class Region {
   String name;
   String terrain;
   String description;
+  String battleSection;
   int trees;
   int saplings;
   int peasants;
@@ -21,6 +22,7 @@ class Region {
       this.name,
       this.terrain,
       this.description,
+      this.battleSection,
       this.trees,
       this.saplings,
       this.peasants,
@@ -38,6 +40,7 @@ class Region {
         json['name'] as String,
         json['terrain'] as String,
         json['description'] as String,
+        json['battleSection'] as String,
         json['trees'] as int,
         json['saplings'] as int,
         json['peasants'] as int,
