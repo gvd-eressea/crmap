@@ -78,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     tabController.addListener(_onTabChange);
     _regionsList = getRegionsLocally();
     _regionsListFromFile = [];
-    _markedRegion = Region("", 0, 0, "", "", "", 0, 0, 0, 0, 0, 0, 0, 0);
+    _markedRegion = Region("", 0, 0, "", "", "", "", 0, 0, 0, 0, 0, 0, 0, 0);
     _horizontalDrag = 0;
   }
 
@@ -293,7 +293,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               Region found = rl.regions.firstWhere(
                   (region) => region.x == x && region.y == y,
                   orElse: () =>
-                      Region("", x, y, "", "", "", 0, 0, 0, 0, 0, 0, 0, 0));
+                      Region("", x, y, "", "", "", "", 0, 0, 0, 0, 0, 0, 0, 0));
               var color = findColorByTerrain(found);
               var imageName = found.terrain == ""
                   ? "images/unbekannt.gif"
@@ -482,6 +482,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     richText('Rekruten: ', _markedRegion.recruits.toString()),
                     richText('Lohn: ', _markedRegion.wage.toString()),
                   ])),
+            Card(
+                elevation: 1,
+                color: Colors.white,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      richText('Kämpfe: ', _markedRegion.battleSection),
+                    ])),
+
         ],
       ),
     );
