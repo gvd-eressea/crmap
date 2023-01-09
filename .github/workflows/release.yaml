@@ -32,7 +32,7 @@ jobs:
           allowUpdates: true
           replacesArtifacts: true
           tag: dev-release-${{github.run_number}}
-          token: ${{ secrets.CRMAP_TOKEN }}
+          token: ${{ secrets.CRMAP2022_01 }}
       - name: Build release project
         run: flutter build web
       - name: Upload production-ready build files
@@ -57,5 +57,5 @@ jobs:
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.CRMAP_TOKEN }}
+          github_token: ${{ secrets.CRMAP2022_01 }}
           publish_dir: ./build
