@@ -198,6 +198,7 @@ int getIntElement(List<String> split, int element, String elementName) {
 
 Future<List<Region>> getRegionsLocally() async {
   List<Region> regionList = [];
+  List<Battle> battleList = [];
   Region region;
   int x = -9999;
   int y = -9999;
@@ -205,7 +206,6 @@ Future<List<Region>> getRegionsLocally() async {
   String name = "";
   String terrain = "";
   String description = "";
-  String battleSection = "";
   int trees = 0;
   int saplings = 0;
   int peasants = 0;
@@ -215,6 +215,15 @@ Future<List<Region>> getRegionsLocally() async {
   int recruits = 0;
   int wage = 0;
   int count = 0;
+  var regionActive = false;
+
+  Battle battle;
+  String battleId = "";
+  int xb = -9999;
+  int yb = -9999;
+  String battleSection = "";
+  var battleActive = false;
+  int countBattle = 0;
 
   final data = await rootBundle.loadString('./assets/Andune.txt');
 
@@ -222,6 +231,8 @@ Future<List<Region>> getRegionsLocally() async {
   List<String> lines = ls.convert(data);
   for (var line in lines) {
     if (line.startsWith("REGION")) {
+      regionActive = true;
+      battleActive = false;
       if (regionList.length < count) {
         region = Region(id, x, y, name, terrain, description, battleSection, trees, saplings,
             peasants, horses, silver, entertainment, recruits, wage);
@@ -245,21 +256,51 @@ Future<List<Region>> getRegionsLocally() async {
       x = int.parse(split.elementAt(1));
       y = int.parse(split.elementAt(2));
       count++;
+    } else if (line.startsWith("BATTLE")) {
+      regionActive = false;
+      battleActive = true;
+      if (battleList.length < countBattle) {
+        battleId = 'b$countBattle';
+        battle = Battle(battleId, xb, yb, battleSection);
+        battleList.add(battle);
+        // reset to initial values
+        print("Add: " + battle.toString());
+        battleSection = "";
+      }
+      List<String> split = line.split(" ");
+      xb = int.parse(split.elementAt(1));
+      yb = int.parse(split.elementAt(2));
+      countBattle++;
     } else {
-      List<String> split = line.split(";");
-      if (split.length > 1) {
-        id = getStringElement(split, id, "id");
-        terrain = getStringElement(split, terrain, "Terrain");
-        name = getStringElement(split, name, "Name");
-        description = getStringElement(split, description, "Beschr");
-        trees = getIntElement(split, trees, "Baeume");
-        saplings = getIntElement(split, saplings, "Schoesslinge");
-        peasants = getIntElement(split, peasants, "Bauern");
-        horses = getIntElement(split, horses, "Pferde");
-        silver = getIntElement(split, silver, "Silber");
-        entertainment = getIntElement(split, entertainment, "Unterh");
-        recruits = getIntElement(split, recruits, "Rekruten");
-        wage = getIntElement(split, wage, "Lohn");
+      if (regionActive) {
+        List<String> split = line.split(";");
+        if (split.length > 1) {
+          id = getStringElement(split, id, "id");
+          terrain = getStringElement(split, terrain, "Terrain");
+          name = getStringElement(split, name, "Name");
+          description = getStringElement(split, description, "Beschr");
+          trees = getIntElement(split, trees, "Baeume");
+          saplings = getIntElement(split, saplings, "Schoesslinge");
+          peasants = getIntElement(split, peasants, "Bauern");
+          horses = getIntElement(split, horses, "Pferde");
+          silver = getIntElement(split, silver, "Silber");
+          entertainment = getIntElement(split, entertainment, "Unterh");
+          recruits = getIntElement(split, recruits, "Rekruten");
+          wage = getIntElement(split, wage, "Lohn");
+        }
+      } else if (battleActive) {
+        if (line.startsWith("MESSAGE")) {
+          // skip
+        } else {
+          List<String> split = line.split(";");
+          if (split.length > 1) {
+            var section = "";
+            section = getStringElement(split, section, "rendered");
+            if (section != "") {
+              battleSection = battleSection + '\n' + section;
+            }
+          }
+        }
       }
     }
   }
@@ -268,6 +309,15 @@ Future<List<Region>> getRegionsLocally() async {
         peasants, horses, silver, entertainment, recruits, wage);
     regionList.add(region);
     print("Last: $count " + region.toString());
+  }
+  if (regionList.length > 0 && battleList.length > 0) {
+    regionList.forEach((region) {
+      var foundBattle = battleList.firstWhere((battle) => battle.x == region.x && battle.y == region.y, orElse: () => Battle("none", -1, -1, ""));
+      if (foundBattle.id != "none") {
+        region.battleSection = foundBattle.battleSection;
+        print("Battle found in  " + region.toString());
+      }
+    });
   }
   print("Found " + regionList.length.toString() + " Regions.");
   return regionList;
