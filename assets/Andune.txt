@@ -15,6 +15,130 @@ VERSION 69
 "ERESSEA 2 BEFEHLE";mailcmd
 "3.29.1";Build
 2500;max_units
+BATTLE 6 -4
+MESSAGE 1462752784
+26679501;type
+"battle";section
+"Der Kampf wurde ausgelöst von Die goldaeugigen Katzen (2).";rendered
+"Die goldaeugigen Katzen (2)";factions
+MESSAGE 1462716624
+1801908756;type
+"battle";section
+"Heer 0: Die goldaeugigen Katzen (2)";rendered
+0;index
+"Die goldaeugigen Katzen (2)";name
+37427;faction
+MESSAGE 1462711200
+1803906635;type
+"battle";section
+"Kämpft gegen: Heer 1 (ii)";rendered
+"Kämpft gegen: Heer 1 (ii)";string
+MESSAGE 1462710256
+1803906635;type
+"battle";section
+"Attacke gegen: Heer 1(ii)";rendered
+"Attacke gegen: Heer 1(ii)";string
+MESSAGE 1462691424
+1684814935;type
+"battle";section
+"... in der 1. Kampflinie:";rendered
+1;row
+MESSAGE 1462666944
+2144337409;type
+"battle";section
+"  + Tempelritter von Orden des Schneetigers (325), 100 Hochkatzen, vorne, hat: 6 Kettenhemden, 100 Pferde, 6 Schilde, 100 Speere.";rendered
+"  + Tempelritter von Orden des Schneetigers (325), 100 Hochkatzen, vorne, hat: 6 Kettenhemden, 100 Pferde, 6 Schilde, 100 Speere.";string
+238382;unit
+MESSAGE 1462640816
+2144337409;type
+"battle";section
+"  + Karawanenwaechter von Dhur'Al'Raid (4gn), 10 Hochkatzen, vorne, bewacht die Region, hat: 10 Speere.";rendered
+"  + Karawanenwaechter von Dhur'Al'Raid (4gn), 10 Hochkatzen, vorne, bewacht die Region, hat: 10 Speere.";string
+487121;unit
+MESSAGE 1462607760
+1684814935;type
+"battle";section
+"... in der 2. Kampflinie:";rendered
+2;row
+MESSAGE 1462581424
+2144337409;type
+"battle";section
+"  + Khim yn'Khelek (6i3), 1 Katze, defensiv.";rendered
+"  + Khim yn'Khelek (6i3), 1 Katze, defensiv.";string
+90302;unit
+MESSAGE 1462534944
+1801908756;type
+"battle";section
+"Heer 1: Monster (ii)";rendered
+1;index
+"Monster (ii)";name
+666;faction
+MESSAGE 1462537264
+1803906635;type
+"battle";section
+"Kämpft gegen: Heer 0 (2)";rendered
+"Kämpft gegen: Heer 0 (2)";string
+MESSAGE 1462490784
+1684814935;type
+"battle";section
+"... in der 1. Kampflinie:";rendered
+1;row
+MESSAGE 1462477392
+2144337409;type
+"battle";section
+"  - Die Unbarmherzigen von Kâdtowir (3xL4), 3 Jungdrachen, aggressiv.";rendered
+"  - Die Unbarmherzigen von Kâdtowir (3xL4), 3 Jungdrachen, aggressiv.";string
+183496;unit
+MESSAGE 1462467216
+583524665;type
+"battle";section
+"Khim yn'Khelek (6i3) überrascht den Gegner.";rendered
+90302;unit
+MESSAGE 1462429504
+564544796;type
+"battle";section
+"Einheiten vor der 0. Runde:";rendered
+0;turn
+MESSAGE 1462423424
+1803906635;type
+"battle";section
+"Heer  0(2): 110+1, Heer  1(ii): 3";rendered
+"Heer  0(2): 110+1, Heer  1(ii): 3";string
+MESSAGE 1462371104
+1264406109;type
+"battle";section
+"Einheiten nach dem Kampf:";rendered
+MESSAGE 1462372528
+1803906635;type
+"battle";section
+"Heer  0(2): 110+1";rendered
+"Heer  0(2): 110+1";string
+MESSAGE 1462278528
+804883071;type
+"battle";section
+"Die Unbarmherzigen von Kâdtowir (3xL4) verlor 3 Personen.";rendered
+183496;unit
+3;fallen
+0;alive
+0;run
+MESSAGE 1462270208
+1109807897;type
+"battle";section
+"Heer 0(2): 0 Tote, 0 Geflohene, 111 Überlebende.";rendered
+0;index
+"2";abbrev
+0;dead
+0;fled
+111;survived
+MESSAGE 1462249120
+1109807897;type
+"battle";section
+"Heer 1(ii): 3 Tote, 0 Geflohene, 0 Überlebende.";rendered
+1;index
+"ii";abbrev
+3;dead
+0;fled
+0;survived
 REGION 3 7
 1647557959;id
 "Ozean";Terrain
