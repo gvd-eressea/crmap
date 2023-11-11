@@ -19,7 +19,6 @@ void main() {
     // Verify that app starts with 'file open' tab.
     expect(find.byKey(Key('openCR')), findsOneWidget);
 
-
     // Tap the map tab and trigger a frame.
     await tester.tap(find.byKey(Key('map')));
     await tester.pumpAndSettle();
@@ -28,12 +27,12 @@ void main() {
     expect(find.byKey(Key('openCR')), findsNothing);
     // Verify that the map with ocean field is shown.
     expect(find.byWidgetPredicate((widget) {
-      return (widget is Text && widget.data.contains('Ozean / -1,8'));
-    }),findsOneWidget);
+      return (widget is Text && widget.data!.contains('Ozean / -1,8'));
+    }), findsOneWidget);
 
     // Tap the ocean region and trigger a frame.
     await tester.tap(find.byWidgetPredicate((widget) {
-      return (widget is Text && widget.data.contains('Ozean / -1,8'));
+      return (widget is Text && widget.data!.contains('Ozean / -1,8'));
     }));
     await tester.pumpAndSettle();
 
