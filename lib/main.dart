@@ -102,18 +102,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-  void Function() handlePressed(
-      BuildContext context, String buttonName) {
+  void Function() handlePressed(BuildContext context, String buttonName) {
     return () {
       if (_battleRegionsList.isNotEmpty) {
         var region = _battleRegionsList.removeLast();
-        if (region.name.length>0) {
+        if (region.name.length > 0) {
           battleRegion = region.name;
           searchRegion = region.name;
         } else {
-        battleRegion = region.terrain;
+          battleRegion = region.terrain;
         }
-
       } else {
         battleRegion = "Keine Kämpfe";
       }
@@ -132,7 +130,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     };
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +158,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                         child: Row(
                           children: <Widget>[
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
                               child: ElevatedButton(
                                 onPressed: handlePressed(context, battleRegion),
                                 child: Text(battleRegion),
@@ -241,8 +239,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       print('searchRegion: $searchRegion');
-      if (searchRegion.isNotEmpty &&
-          _regionsListFromFile.isNotEmpty) {
+      if (searchRegion.isNotEmpty && _regionsListFromFile.isNotEmpty) {
         var foundRegion = _regionsListFromFile.firstWhere(
             (region) => region.name.contains(searchRegion),
             orElse: nothingFound);
@@ -595,25 +592,25 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         File file = File(s!);
         fileStream = file.readAsBytesSync();
       }
-        if (isZipFile) {
-          var content = "";
-          print("Decompress zip file and find cr file.");
-          final archive = new ZipDecoder().decodeBytes(fileStream);
-          for (var file in archive) {
-            if (file.isFile) {
-              if (p.context.extension(file.name) == '.cr') {
-                print("Found cr file " + file.name);
-                content = utf8.decode(file.content);
-                break;
-              }
+      if (isZipFile) {
+        var content = "";
+        print("Decompress zip file and find cr file.");
+        final archive = new ZipDecoder().decodeBytes(fileStream);
+        for (var file in archive) {
+          if (file.isFile) {
+            if (p.context.extension(file.name) == '.cr') {
+              print("Found cr file " + file.name);
+              content = utf8.decode(file.content);
+              break;
             }
           }
-          print("File content length: " + content.length.toString());
-          myRegionsList = readFileByLinesForString(content);
-        } else {
-          print("File stream length: " + fileStream.lengthInBytes.toString());
-          myRegionsList = readFileByLinesForStream(fileStream);
         }
+        print("File content length: " + content.length.toString());
+        myRegionsList = readFileByLinesForString(content);
+      } else {
+        print("File stream length: " + fileStream.lengthInBytes.toString());
+        myRegionsList = readFileByLinesForStream(fileStream);
+      }
       //                print(myRegionsList);
     }
     return myRegionsList;
