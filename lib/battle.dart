@@ -4,17 +4,10 @@ class Battle {
   int y;
   String battleSection;
 
-  Battle(
-      this.id,
-      this.x,
-      this.y,
-      this.battleSection);
+  Battle(this.id, this.x, this.y, this.battleSection);
 
   factory Battle.fromJson(dynamic json) {
-    return Battle(
-        json['id'] as String,
-        json['x'] as int,
-        json['y'] as int,
+    return Battle(json['id'] as String, json['x'] as int, json['y'] as int,
         json['battleSection'] as String);
   }
 

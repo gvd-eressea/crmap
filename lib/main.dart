@@ -45,7 +45,7 @@ const MaterialColor myBlue = MaterialColor(
 const int _myBluePrimaryValue = 0xFF404080;
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({required Key key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -60,13 +60,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   bool hasControls = false;
   double hexSize = 80;
 
-  TabController tabController;
+  late TabController tabController;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String searchRegion = "";
+  String battleRegion = "Finde Kämpfe";
 
-  Future<List<Region>> _regionsList;
-  List<Region> _regionsListFromFile;
-  Region _markedRegion;
+  late Future<List<Region>> _regionsList;
+  late List<Region> _regionsListFromFile;
+  late List<Region> _battleRegionsList;
+  late Region _markedRegion;
   int _horizontalDrag = 0;
   int _verticalDrag = 0;
   int _lastDragTime = 0;
@@ -100,6 +102,35 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
+  void Function() handlePressed(BuildContext context, String buttonName) {
+    return () {
+      if (_battleRegionsList.isNotEmpty) {
+        var region = _battleRegionsList.removeLast();
+        if (region.name.length > 0) {
+          battleRegion = region.name;
+          searchRegion = region.name;
+        } else {
+          battleRegion = region.terrain;
+        }
+      } else {
+        battleRegion = "Keine Kämpfe";
+      }
+      final snackBar = SnackBar(
+        content: Text(
+          '$battleRegion gefunden!',
+          style: TextStyle(color: Theme.of(context).colorScheme.surface),
+        ),
+        action: SnackBarAction(
+          textColor: Theme.of(context).colorScheme.surface,
+          label: 'Close',
+          onPressed: () {},
+        ),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -126,6 +157,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                         key: _formKey,
                         child: Row(
                           children: <Widget>[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: ElevatedButton(
+                                onPressed: handlePressed(context, battleRegion),
+                                child: Text(battleRegion),
+                              ),
+                            ),
                             ConstrainedBox(
                               constraints: BoxConstraints.tight(
                                   Size(size.width / 4, 50)),
@@ -133,15 +172,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                 decoration: const InputDecoration(
                                   hintText: 'Regionssuche',
                                 ),
-                                validator: (String value) {
+                                validator: (String? value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Bitte Regionsnamen eingeben';
                                   }
                                   return null;
                                 },
-                                onSaved: (String value) {
+                                onSaved: (String? value) {
                                   setState(() {
-                                    searchRegion = value;
+                                    searchRegion = value!;
                                   });
                                 },
                               ),
@@ -197,12 +236,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   /// Find region where the region name contains the entered search string.
   void findRegionByPartOfName() {
-    if (_formKey.currentState.validate()) {
-      _formKey.currentState.save();
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
       print('searchRegion: $searchRegion');
-      if (searchRegion != null &&
-          searchRegion.isNotEmpty &&
-          _regionsListFromFile.isNotEmpty) {
+      if (searchRegion.isNotEmpty && _regionsListFromFile.isNotEmpty) {
         var foundRegion = _regionsListFromFile.firstWhere(
             (region) => region.name.contains(searchRegion),
             orElse: nothingFound);
@@ -222,7 +259,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   Widget _buildHorizontalGrid(
       BuildContext context, Size size, TabController tabController) {
-    if (_regionsListFromFile != null && _regionsListFromFile.length > 0) {
+    if (_regionsListFromFile.length > 0) {
       RegionList rl = RegionList(_regionsListFromFile);
       return showMap(rl, size, tabController);
     } else {
@@ -232,7 +269,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return CircularProgressIndicator();
           } else if (snapshot.connectionState == ConnectionState.done) {
-            Object data = snapshot.data;
+            Object? data = snapshot.data;
             if (data is List<Region>) {
               RegionList rl = RegionList(data);
               return showMap(rl, size, tabController);
@@ -410,7 +447,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
       setState(() {
         if (dragUpdateDetails.primaryDelta != 0) {
-          dragUpdateDetails.primaryDelta > 0
+          dragUpdateDetails.primaryDelta! > 0
               ? _horizontalDrag--
               : _horizontalDrag++;
         }
@@ -427,7 +464,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           'delta ${dragUpdateDetails.delta} / primaryDelta ${dragUpdateDetails.primaryDelta} / globalPosition ${dragUpdateDetails.globalPosition} / localPosition ${dragUpdateDetails.localPosition} / diffTime $diffTime');
       setState(() {
         if (dragUpdateDetails.primaryDelta != 0) {
-          dragUpdateDetails.primaryDelta > 0
+          dragUpdateDetails.primaryDelta! > 0
               ? _verticalDrag--
               : _verticalDrag++;
         }
@@ -482,15 +519,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     richText('Rekruten: ', _markedRegion.recruits.toString()),
                     richText('Lohn: ', _markedRegion.wage.toString()),
                   ])),
-            Card(
-                elevation: 1,
-                color: Colors.white,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      richText('Kämpfe: ', _markedRegion.battleSection),
-                    ])),
-
+          Card(
+              elevation: 1,
+              color: Colors.white,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    richText('Kämpfe: ', _markedRegion.battleSection),
+                  ])),
         ],
       ),
     );
@@ -528,6 +564,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               var myRegionsList = await openFile();
               setState(() {
                 _regionsListFromFile = myRegionsList;
+                _battleRegionsList = fillBattleList(_regionsListFromFile);
               });
               tabController.animateTo(tabController.index + 1);
             },
@@ -540,7 +577,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   Future<dynamic> openFile() async {
     var myRegionsList = [];
-    FilePickerResult result =
+    FilePickerResult? result =
         await FilePicker.platform.pickFiles(type: FileType.any);
     if (result != null) {
       var fileName = result.files.first.name;
@@ -551,31 +588,28 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       var isZipFile = p.context.extension(fileName) == '.zip';
       var fileStream = result.files.first.bytes;
       if (fileStream == null) {
-        File file = File(result.files.single.path);
+        var s = result.files.single.path;
+        File file = File(s!);
         fileStream = file.readAsBytesSync();
       }
-      if (fileStream != null) {
-        if (isZipFile) {
-          var content = "";
-          print("Decompress zip file and find cr file.");
-          final archive = new ZipDecoder().decodeBytes(fileStream);
-          for (var file in archive) {
-            if (file.isFile) {
-              if (p.context.extension(file.name) == '.cr') {
-                print("Found cr file " + file.name);
-                content = utf8.decode(file.content);
-                break;
-              }
+      if (isZipFile) {
+        var content = "";
+        print("Decompress zip file and find cr file.");
+        final archive = new ZipDecoder().decodeBytes(fileStream);
+        for (var file in archive) {
+          if (file.isFile) {
+            if (p.context.extension(file.name) == '.cr') {
+              print("Found cr file " + file.name);
+              content = utf8.decode(file.content);
+              break;
             }
           }
-          print("File content length: " + content.length.toString());
-          myRegionsList = readFileByLinesForString(content);
-        } else {
-          print("File stream length: " + fileStream.lengthInBytes.toString());
-          myRegionsList = readFileByLinesForStream(fileStream);
         }
+        print("File content length: " + content.length.toString());
+        myRegionsList = readFileByLinesForString(content);
       } else {
-        print("file stream empty");
+        print("File stream length: " + fileStream.lengthInBytes.toString());
+        myRegionsList = readFileByLinesForStream(fileStream);
       }
       //                print(myRegionsList);
     }
@@ -585,8 +619,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
 class RegionWidget extends StatelessWidget {
   const RegionWidget({
-    Key key,
-    this.width,
+    required Key key,
+    required this.width,
     this.name,
   }) : super(key: key);
 

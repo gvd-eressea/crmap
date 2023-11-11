@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:crmap_app/region.dart';
 import 'package:crmap_app/battle.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show Uint8List, rootBundle;
 
 void main() async {
-  RegionList rl;
+  List<Region> list = [];
+  RegionList rl = RegionList(list);
   Future<List<Region>> regions = readFileByLines();
   regions.then((value) => rl = RegionList(value));
 
@@ -60,18 +60,28 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
   var battleActive = false;
   int countBattle = 0;
 
-  if (inputStream == null) {
-    return regionList;
-  }
-
   List<String> lines = Utf8Decoder().convert(inputStream).split('\n');
   for (var line in lines) {
     if (line.startsWith("REGION")) {
       regionActive = true;
       battleActive = false;
       if (regionList.length < count) {
-        region = Region(id, x, y, name, terrain, description, regionBattleSection, trees, saplings,
-            peasants, horses, silver, entertainment, recruits, wage);
+        region = Region(
+            id,
+            x,
+            y,
+            name,
+            terrain,
+            description,
+            regionBattleSection,
+            trees,
+            saplings,
+            peasants,
+            horses,
+            silver,
+            entertainment,
+            recruits,
+            wage);
         regionList.add(region);
         // reset to initial values
         id = "";
@@ -164,14 +174,30 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
   }
   print('File is now closed.');
   if (regionList.length < count) {
-    region = Region(id, x, y, name, terrain, description, regionBattleSection, trees, saplings,
-        peasants, horses, silver, entertainment, recruits, wage);
+    region = Region(
+        id,
+        x,
+        y,
+        name,
+        terrain,
+        description,
+        regionBattleSection,
+        trees,
+        saplings,
+        peasants,
+        horses,
+        silver,
+        entertainment,
+        recruits,
+        wage);
     regionList.add(region);
-    print("Last: $count " + region.toString());
+    print("readFileByLinesForStream - Last: $count " + region.toString());
   }
   if (regionList.length > 0 && battleList.length > 0) {
     regionList.forEach((region) {
-      var foundBattle = battleList.firstWhere((battle) => battle.x == region.x && battle.y == region.y, orElse: () => Battle("none", -1, -1, ""));
+      var foundBattle = battleList.firstWhere(
+          (battle) => battle.x == region.x && battle.y == region.y,
+          orElse: () => Battle("none", -1, -1, ""));
       if (foundBattle.id != "none") {
         region.battleSection = foundBattle.battleSection;
         print("Battle found in  " + region.toString());
@@ -182,7 +208,8 @@ List<Region> readFileByLinesForStream(Uint8List inputStream) {
   return regionList;
 }
 
-String getStringElement(List<String> split, String element, String elementName) {
+String getStringElement(
+    List<String> split, String element, String elementName) {
   if (split.elementAt(1).replaceAll("\r", "") == elementName) {
     element = split.elementAt(0).replaceAll("\"", "");
   }
@@ -194,6 +221,20 @@ int getIntElement(List<String> split, int element, String elementName) {
     element = int.parse(split.elementAt(0).replaceAll("\"", ""));
   }
   return element;
+}
+
+List<Region> fillBattleList(List<Region> regionList) {
+  List<Region> battleRegionList = [];
+  regionList.forEach((region) {
+    if (region.battleSection.length>0) {
+      battleRegionList.add(region);
+    }
+  });
+  if (battleRegionList.length>0) {
+    var cnt = battleRegionList.length;
+    print("Found $cnt battles.");
+  }
+  return battleRegionList;
 }
 
 Future<List<Region>> getRegionsLocally() async {
@@ -234,8 +275,22 @@ Future<List<Region>> getRegionsLocally() async {
       regionActive = true;
       battleActive = false;
       if (regionList.length < count) {
-        region = Region(id, x, y, name, terrain, description, battleSection, trees, saplings,
-            peasants, horses, silver, entertainment, recruits, wage);
+        region = Region(
+            id,
+            x,
+            y,
+            name,
+            terrain,
+            description,
+            battleSection,
+            trees,
+            saplings,
+            peasants,
+            horses,
+            silver,
+            entertainment,
+            recruits,
+            wage);
         regionList.add(region);
         print("$count " + region.toString());
         // reset to initial values
@@ -271,6 +326,17 @@ Future<List<Region>> getRegionsLocally() async {
       xb = int.parse(split.elementAt(1));
       yb = int.parse(split.elementAt(2));
       countBattle++;
+    } else if (line.startsWith("PARTEI")) {
+      regionActive = false;
+      battleActive = false;
+      if (battleList.length < countBattle) {
+        battleId = 'b$countBattle';
+        battle = Battle(battleId, xb, yb, battleSection);
+        battleList.add(battle);
+        // reset to initial values
+        print("Add: " + battle.toString());
+        battleSection = "";
+      }
     } else {
       if (regionActive) {
         List<String> split = line.split(";");
@@ -305,10 +371,21 @@ Future<List<Region>> getRegionsLocally() async {
     }
   }
   if (regionList.length < count) {
-    region = Region(id, x, y, name, terrain, description, battleSection, trees, saplings,
-        peasants, horses, silver, entertainment, recruits, wage);
+    region = Region(id, x, y, name, terrain, description, battleSection, trees,
+        saplings, peasants, horses, silver, entertainment, recruits, wage);
     regionList.add(region);
-    print("Last: $count " + region.toString());
+    print("getRegionsLocally - Last: $count " + region.toString());
+  }
+  if (regionList.length > 0 && battleList.length > 0) {
+    regionList.forEach((region) {
+      var foundBattle = battleList.firstWhere(
+          (battle) => battle.x == region.x && battle.y == region.y,
+          orElse: () => Battle("none", -1, -1, ""));
+      if (foundBattle.id != "none") {
+        region.battleSection = foundBattle.battleSection;
+        print("Battle found in  " + region.toString());
+      }
+    });
   }
   if (regionList.length > 0 && battleList.length > 0) {
     regionList.forEach((region) {
@@ -344,17 +421,27 @@ List<Region> readFileByLinesForString(String content) {
   int count = 0;
   var regionActive = false;
 
-  if (content == null) {
-    return regionList;
-  }
-
   List<String> lines = content.split('\n');
   for (var line in lines) {
     if (line.startsWith("REGION")) {
       regionActive = true;
       if (regionList.length < count) {
-        region = Region(id, x, y, name, terrain, description, battleSection, trees, saplings,
-            peasants, horses, silver, entertainment, recruits, wage);
+        region = Region(
+            id,
+            x,
+            y,
+            name,
+            terrain,
+            description,
+            battleSection,
+            trees,
+            saplings,
+            peasants,
+            horses,
+            silver,
+            entertainment,
+            recruits,
+            wage);
         regionList.add(region);
         // reset to initial values
         id = "";
@@ -404,8 +491,8 @@ List<Region> readFileByLinesForString(String content) {
   }
   print('File is now closed.');
   if (regionList.length < count) {
-    region = Region(id, x, y, name, terrain, description, battleSection, trees, saplings,
-        peasants, horses, silver, entertainment, recruits, wage);
+    region = Region(id, x, y, name, terrain, description, battleSection, trees,
+        saplings, peasants, horses, silver, entertainment, recruits, wage);
     regionList.add(region);
     print("Last: $count " + region.toString());
   }

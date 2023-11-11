@@ -4,7 +4,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
@@ -16,7 +15,7 @@ class FlutterFileDialog {
   ///
   /// Returns the path of the picked file or null if operation was cancelled.
   /// Throws exception on error.
-  static Future<String> pickFile({OpenFileDialogParams params}) {
+  static Future<dynamic>? pickFile({required OpenFileDialogParams params}) {
     return _channel.invokeMethod('pickFile', params.toJson());
   }
 
@@ -25,7 +24,7 @@ class FlutterFileDialog {
   ///
   /// Returns path of the saved file or null if operation was cancelled.
   /// Throws exception on error.
-  static Future<String> saveFile({SaveFileDialogParams params}) {
+  static Future<dynamic> saveFile({required SaveFileDialogParams params}) {
     return _channel.invokeMethod('saveFile', params.toJson());
   }
 }
@@ -33,7 +32,7 @@ class FlutterFileDialog {
 /// Dialog types for [pickFile] (iOS only)
 enum OpenFileDialogType { document, image }
 
-String _openFileDialogTypeToString(OpenFileDialogType dialogType) {
+String? _openFileDialogTypeToString(OpenFileDialogType dialogType) {
   switch (dialogType) {
     case OpenFileDialogType.document:
       return 'document';
@@ -47,7 +46,7 @@ String _openFileDialogTypeToString(OpenFileDialogType dialogType) {
 /// Source types for [pickFile] (iOS only)
 enum SourceType { camera, photoLibrary, savedPhotosAlbum }
 
-String _sourceTypeToString(SourceType sourceType) {
+String? _sourceTypeToString(SourceType sourceType) {
   switch (sourceType) {
     case SourceType.camera:
       return 'camera';
@@ -103,9 +102,9 @@ class OpenFileDialogParams {
     this.dialogType = OpenFileDialogType.document,
     this.sourceType = SourceType.photoLibrary,
     this.allowEditing = false,
-    this.allowedUtiTypes,
-    this.fileExtensionsFilter,
-    this.mimeTypesFilter,
+    required this.allowedUtiTypes,
+    required this.fileExtensionsFilter,
+    required this.mimeTypesFilter,
     this.localOnly = false,
     this.copyFileToCacheDir = true,
   });
@@ -147,17 +146,12 @@ class SaveFileDialogParams {
 
   /// Create parameters for the [saveFile] method.
   const SaveFileDialogParams({
-    this.sourceFilePath,
-    this.data,
-    this.fileName,
-    this.mimeTypesFilter,
+    required this.sourceFilePath,
+    required this.data,
+    required this.fileName,
+    required this.mimeTypesFilter,
     this.localOnly = false,
-  })  : assert(sourceFilePath == null || data == null,
-  'sourceFilePath or data should be null'),
-        assert(sourceFilePath != null || data != null,
-        'Missing sourceFilePath or data'),
-        assert(data == null || (fileName != null && fileName != ''),
-        'Missing fileName');
+  });
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{

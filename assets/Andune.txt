@@ -139,6 +139,9 @@ MESSAGE 1462249120
 3;dead
 0;fled
 0;survived
+PARTEI 2
+"Die goldaeugigen Katzen";Parteiname
+"de";locale
 REGION 3 7
 1647557959;id
 "Ozean";Terrain
