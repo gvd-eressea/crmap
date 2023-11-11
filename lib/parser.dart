@@ -387,6 +387,15 @@ Future<List<Region>> getRegionsLocally() async {
       }
     });
   }
+  if (regionList.length > 0 && battleList.length > 0) {
+    regionList.forEach((region) {
+      var foundBattle = battleList.firstWhere((battle) => battle.x == region.x && battle.y == region.y, orElse: () => Battle("none", -1, -1, ""));
+      if (foundBattle.id != "none") {
+        region.battleSection = foundBattle.battleSection;
+        print("Battle found in  " + region.toString());
+      }
+    });
+  }
   print("Found " + regionList.length.toString() + " Regions.");
   return regionList;
 }
